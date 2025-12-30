@@ -101,7 +101,6 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
           <View style={styles.avatarSection}>
             <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
               <Image 
-                // Hiển thị avatarUri nếu có, không thì hiện ảnh mặc định
                 source={{ uri: avatarUri || AVT_DEFAULT }} 
                 style={styles.avatar} 
               />

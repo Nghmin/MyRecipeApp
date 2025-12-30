@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { 
   View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, 
-  FlatList, Image, 
+  FlatList, Image, Alert
 } from 'react-native';
 import { Users, Plus, Heart, Bookmark, MessageCircle } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+
 import { db, auth } from '../config/firebaseConfig';
+
 import { Recipe } from '../models/Recipe';
+
+import { FavoriteService } from '../services/favoriteService'
 
 interface CommunityPost extends Recipe {
   postId: string;
@@ -21,17 +25,33 @@ interface CommunityPost extends Recipe {
 }
 
 interface CommunityFeedProps {
-  onOpenShareModal: () => void;
+  onOpenShareModal?: () => void;
+  mode?: 'all' | 'favorites';
+  onPressDetailPost?: (post: CommunityPost) => void;
+  onFavoriteChange?: (post: any) => void;
 }
 
-export function CommunityFeed({ onOpenShareModal }: CommunityFeedProps) {
+export function CommunityFeed({ onOpenShareModal ,mode = 'all',onPressDetailPost, onFavoriteChange}: CommunityFeedProps) {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const currentUser = auth.currentUser;
 
   useEffect(() => {
-    const q = query(collection(db, "CommunityPosts"), orderBy("sharedAt", "desc"));
-    
+    const fetchFavs = async () => {
+      const favs = await FavoriteService.getFavorites();
+      setFavoriteIds(favs.map((f: any) => f.postId));
+    };
+    fetchFavs();
+  }, []);
+
+  useEffect(() => {
+    let q;
+    if (mode === 'favorites'){
+      q = query(collection(db, "Users", auth.currentUser?.uid || '', "Favorites"), orderBy("addedAt", "desc"));
+    } else {
+      q = query(collection(db, "CommunityPosts"), orderBy("sharedAt", "desc"));
+    }
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const feedData = snapshot.docs.map(doc => ({
         postId: doc.id,
@@ -46,7 +66,7 @@ export function CommunityFeed({ onOpenShareModal }: CommunityFeedProps) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [mode]);
 
   const handleLike = async (post: CommunityPost) => {
     if (!currentUser) return;
@@ -63,6 +83,21 @@ export function CommunityFeed({ onOpenShareModal }: CommunityFeedProps) {
     }
   };
 
+  const handleToggleSave = async (post: CommunityPost) => {
+    const isSaved = favoriteIds.includes(post.postId);
+    try {
+      const result = await FavoriteService.toggleFavorite(post, isSaved);
+      if (result) {
+        setFavoriteIds(prev => [...prev, post.postId]);
+      } else {
+        setFavoriteIds(prev => prev.filter(id => id !== post.postId));
+      }
+    } catch (error) {
+      Alert.alert("Lỗi", "Không thể cập nhật danh sách yêu thích");
+      console.log(error)
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -73,23 +108,25 @@ export function CommunityFeed({ onOpenShareModal }: CommunityFeedProps) {
 
   return (
     <View style={styles.container}>
-      {/* Header Section */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <LinearGradient colors={['#F97316', '#FF6347']} style={styles.iconBox}>
-            <Users size={20} color="white" />
-          </LinearGradient>
-          <View>
-            <Text style={styles.title}>Cộng đồng</Text>
-            <Text style={styles.subtitle}>Công thức từ mọi người</Text>
+      {mode === 'all' && (
+      <>{/* Header Section */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <LinearGradient colors={['#F97316', '#FF6347']} style={styles.iconBox}>
+              <Users size={20} color="white" />
+            </LinearGradient>
+            <View>
+              <Text style={styles.title}>Cộng đồng</Text>
+              <Text style={styles.subtitle}>Công thức từ mọi người</Text>
+            </View>
           </View>
-        </View>
 
-        <TouchableOpacity onPress={onOpenShareModal} style={styles.shareButton}>
-          <Plus size={18} color="white" />
-          <Text style={styles.shareText}>Đăng bài</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity onPress={() => onOpenShareModal?.()} style={styles.shareButton}>
+            <Plus size={18} color="white" />
+            <Text style={styles.shareText}>Đăng bài</Text>
+          </TouchableOpacity>
+        </View>
+      </>)}
 
       {/* List Posts */}
       <FlatList
@@ -101,8 +138,15 @@ export function CommunityFeed({ onOpenShareModal }: CommunityFeedProps) {
           <Animated.View entering={FadeInUp.delay(index * 100)}>
             <PostCard 
               post={item} 
+              onPress={() => onPressDetailPost?.(item)}
               onLike={() => handleLike(item)}
               isLiked={item.likedBy?.includes(currentUser?.uid || '')}
+              onSave={() => {
+                handleToggleSave(item)
+                onFavoriteChange?.(item)
+              }}
+              isSaved={favoriteIds.includes(item.postId)}
+              
             />
           </Animated.View>
         )}
@@ -112,14 +156,23 @@ export function CommunityFeed({ onOpenShareModal }: CommunityFeedProps) {
 }
 
 // --- Component Card cho từng bài đăng ---
-const PostCard = ({ post, onLike, isLiked }: { post: CommunityPost, onLike: () => void, isLiked: boolean }) => (
+const PostCard = ({ post, onLike, isLiked ,onSave, isSaved ,onPress}: {
+   post: CommunityPost, 
+   onLike: () => void, 
+   isLiked: boolean , 
+   onSave: () => void,
+   isSaved: boolean 
+   onPress?: () => void
+}) => (
   <View style={cardStyles.card}>
-    <View style={cardStyles.userInfo}>
-      <Image source={{ uri: post.userAvatar || 'https://via.placeholder.com/150' }} style={cardStyles.avatar} />
-      <Text style={cardStyles.userName}>{post.userName}</Text>
-    </View>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
+      <View style={cardStyles.userInfo}>
+        <Image source={{ uri: post.userAvatar || 'https://via.placeholder.com/150' }} style={cardStyles.avatar} />
+        <Text style={cardStyles.userName}>{post.userName}</Text>
+      </View>
 
-    <Image source={{ uri: post.image }} style={cardStyles.postImage} />
+      <Image source={{ uri: post.image }} style={cardStyles.postImage} />
+    </TouchableOpacity>
 
     <View style={cardStyles.footer}>
       <View style={cardStyles.actions}>
@@ -134,8 +187,10 @@ const PostCard = ({ post, onLike, isLiked }: { post: CommunityPost, onLike: () =
         </TouchableOpacity>
       </View>
       
-      <TouchableOpacity>
-        <Bookmark size={22} color="#E5E7EB" />
+      <TouchableOpacity onPress={onSave}>
+        <Bookmark size={22} 
+          color={isSaved ? "#F97316" : "#E5E7EB"} 
+          fill={isSaved ? "#F97316" : "none"} />
       </TouchableOpacity>
     </View>
 

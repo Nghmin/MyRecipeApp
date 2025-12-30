@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, Alert, FlatList ,TextInput
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+// import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { ChefHat, Plus } from 'lucide-react-native';
@@ -65,15 +65,15 @@ export default function RecipeOfMySelfScreen() {
     return () => unsubscribe();
   }, []);
   
-  useFocusEffect(
-        React.useCallback(() => {
-          const loadFavs = async () => {
-            const data = await FavoriteService.getFavorites();
-            setFavoriteRecipes(data);
-          };
-          loadFavs();
-        }, [])
-    );
+  // useFocusEffect(
+  //       React.useCallback(() => {
+  //         const loadFavs = async () => {
+  //           const data = await FavoriteService.getFavorites();
+  //           setFavoriteRecipes(data);
+  //         };
+  //         loadFavs();
+  //       }, [])
+  //   );
 
   const handleRecipeDetail = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
@@ -185,7 +185,7 @@ export default function RecipeOfMySelfScreen() {
             onDelete={() => handleDeleteRecipe(item.idRecipe, item.name ,item.image)}
             onEdit={() => handleEditPress(item)}
             isMine={true} 
-            showFavoriteBtn={true}
+            showFavoriteBtn={false}
             onToggleFavorite={() => handleToggleFavorite(item)} 
           />
         )
@@ -264,6 +264,7 @@ export default function RecipeOfMySelfScreen() {
           setIsDetalModalOpen(false);
           setSelectedRecipe(null);
         }}
+        showSocialFeatures={false}
       />
     </SafeAreaView>
   );

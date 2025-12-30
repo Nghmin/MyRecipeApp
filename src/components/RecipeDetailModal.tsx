@@ -21,15 +21,10 @@ interface RecipeDetailProps {
   isOpen: boolean;       
   recipe: Recipe | null; 
   onBack: () => void;    
+  showSocialFeatures: boolean;
 }
 
-const mockReviews = [
-  { id: '1', userName: 'Nguyễn Anh', rating: 5, comment: 'Rất ngon! Công thức dễ làm và rõ ràng. Cả nhà đều thích.', date: '2 ngày trước' },
-  { id: '2', userName: 'Trần Minh', rating: 4, comment: 'Món ăn ngon, nhưng mình cần thêm một chút thời gian để chuẩn bị.', date: '5 ngày trước' },
-  { id: '3', userName: 'Lê Thu', rating: 5, comment: 'Tuyệt vời! Đây là công thức tốt nhất mình từng thử.', date: '1 tuần trước' }
-];
-
-export function RecipeDetailModal({ isOpen, recipe, onBack }: RecipeDetailProps) {
+export function RecipeDetailModal({ isOpen, recipe, onBack,showSocialFeatures }: RecipeDetailProps) {
   const [userRating, setUserRating] = useState(0);
   const [comment, setComment] = useState('');
 
@@ -131,60 +126,37 @@ export function RecipeDetailModal({ isOpen, recipe, onBack }: RecipeDetailProps)
             </View>
 
             {/* Đánh giá của người dùng */}
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Đánh giá của bạn</Text>
-              <View style={styles.starRow}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <TouchableOpacity key={star} onPress={() => setUserRating(star)}>
-                    <Star 
-                      size={35} 
-                      color={star <= userRating ? "#F97316" : "#D1D5DB"} 
-                      fill={star <= userRating ? "#F97316" : "transparent"} 
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
-              
-              {userRating > 0 && (
-                <View style={styles.reviewInputContainer}>
-                  <TextInput
-                    placeholder="Chia sẻ cảm nghĩ của bạn..."
-                    multiline
-                    numberOfLines={3}
-                    style={styles.input}
-                    value={comment}
-                    onChangeText={setComment}
-                  />
-                  <TouchableOpacity style={styles.submitButton}>
-                    <Text style={styles.submitButtonText}>Gửi đánh giá</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-
-            {/* Danh sách nhận xét mẫu */}
-            <View style={[styles.card, { marginBottom: 40 }]}>
-              <Text style={styles.sectionTitle}>Nhận xét ({mockReviews.length})</Text>
-              {mockReviews.map((item) => (
-                <View key={item.id} style={styles.reviewItem}>
-                  <View style={styles.reviewHeader}>
-                    <Text style={styles.userName}>{item.userName}</Text>
-                    <Text style={styles.reviewDate}>{item.date}</Text>
-                  </View>
-                  <View style={styles.reviewStars}>
-                    {[1, 2, 3, 4, 5].map((s) => (
+            {showSocialFeatures && (
+              <View style={styles.card}>
+                <Text style={styles.sectionTitle}>Đánh giá của bạn</Text>
+                <View style={styles.starRow}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <TouchableOpacity key={star} onPress={() => setUserRating(star)}>
                       <Star 
-                        key={s} 
-                        size={12} 
-                        color="#FBBF24" 
-                        fill={s <= item.rating ? "#FBBF24" : "transparent"} 
+                        size={35} 
+                        color={star <= userRating ? "#F97316" : "#D1D5DB"} 
+                        fill={star <= userRating ? "#F97316" : "transparent"} 
                       />
-                    ))}
-                  </View>
-                  <Text style={styles.reviewComment}>{item.comment}</Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
-              ))}
-            </View>
+                {userRating > 0 && (
+                  <View style={styles.reviewInputContainer}>
+                    <TextInput
+                      placeholder="Chia sẻ cảm nghĩ của bạn..."
+                      multiline
+                      numberOfLines={3}
+                      style={styles.input}
+                      value={comment}
+                      onChangeText={setComment}
+                    />
+                    <TouchableOpacity style={styles.submitButton}>
+                      <Text style={styles.submitButtonText}>Gửi đánh giá</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
 
           </LinearGradient>
         </ScrollView>

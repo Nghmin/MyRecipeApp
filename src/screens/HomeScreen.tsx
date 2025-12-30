@@ -22,26 +22,28 @@ import { Recipe } from '../models/Recipe';
 import IconMaterial from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 
-import fetchRandomRecipeAPI from '../api/fetchRandomRecipeAPI';
+import {fetchRandomRecipeAPI} from '../api/fetchRandomRecipeAPI';
 import { FavoriteService } from '../services/favoriteService';
+
+ const AVT_DEFAULT = Config.AVT_DEFAULT!;
 
 function HomeScreen() {
     const [userName, setUserName] = React.useState('...');
-    const [userAvatar, setUserAvatar] = React.useState('');
+    const [userAvatar, setUserAvatar] = React.useState(AVT_DEFAULT);
     const [apiRecipes, setApiRecipes] = React.useState<Recipe[]>([]);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
     const [selectedRecipe, setSelectedRecipe] = React.useState<Recipe | null>(null);
     const [isDetalModalOpen, setIsDetalModalOpen] = React.useState(false);
     
-    const [favoriteRecipes, setFavoriteRecipes] = React.useState<Recipe[]>([]);
+    const [favoriteRecipes, setFavoriteRecipes] = React.useState<any[]>([]);
     const [activeTab, setActiveTab] = React.useState('discover');
 
     // Các state bổ sung để chạy tính năng Share
     const [userRecipes, setUserRecipes] = React.useState<Recipe[]>([]);
     const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
 
-    const AVT_DEFAULT = Config.AVT_DEFAULT!;
+   
     
     useFocusEffect(
         React.useCallback(() => {
@@ -84,21 +86,21 @@ function HomeScreen() {
     };
 
     const handleOpenShare = () => {
-        fetchUserRecipes(); // Tải lại món cá nhân trước khi mở modal
+        fetchUserRecipes();
         setIsShareModalOpen(true);
     };
 
-    const handleToggleFavorite = async (item: Recipe) => {
-        const isFav = favoriteRecipes.some(fav => fav.idRecipe === item.idRecipe);
+    const handleToggleFavorite = async (item: any) => {
+        const isFav = favoriteRecipes.some(fav => fav.postId === item.postId);
         try {
             const result = await FavoriteService.toggleFavorite(item, isFav);
             if (result) {
-                setFavoriteRecipes([{...item, isFavorite: true}, ...favoriteRecipes]);
+                setFavoriteRecipes(prev => [{...item, isFavorite: true}, ...prev]);
             } else {
-                setFavoriteRecipes(favoriteRecipes.filter(fav => fav.idRecipe !== item.idRecipe));
+                setFavoriteRecipes(prev => prev.filter(fav => fav.postId !== item.postId));
             }
         } catch (error) {
-            console.log(error);
+            console.log("Lỗi đồng bộ yêu thích tại Home:", error);
         }
     };
 
@@ -108,7 +110,6 @@ function HomeScreen() {
     };
 
     const handleDiscover = async () => {
-        setActiveTab('discover');
         setIsLoading(true);
         const data = await fetchRandomRecipeAPI();
         if (data) {
@@ -131,7 +132,7 @@ function HomeScreen() {
 
         const postData = {
           ...recipe,
-          userId: user.uid,
+          idUser: user.uid,
           userName: userName, 
           userAvatar: userAvatar, 
           sharedAt: serverTimestamp(),
@@ -151,6 +152,17 @@ function HomeScreen() {
     const renderContent = () => {
         if (isLoading && apiRecipes.length === 0 && activeTab === 'discover') {
             return <ActivityIndicator size="large" color="#F97316" style={{ marginTop: 50 }} />;
+        }
+
+        if (activeTab === 'community') {
+            return (
+                <CommunityFeed 
+                    onOpenShareModal={handleOpenShare}
+                    mode="all"
+                    onPressDetailPost={handleRecipeDetail} 
+                    onFavoriteChange={handleToggleFavorite}
+                />
+            );
         }
 
         if (activeTab === 'discover') {
@@ -181,15 +193,7 @@ function HomeScreen() {
             );
         }
 
-        if (activeTab === 'community') {
-            // SỬ DỤNG COMPONENT CỘNG ĐỒNG THẬT
-            return (
-                <CommunityFeed 
-                    // userRecipes={userRecipes} 
-                    onOpenShareModal={handleOpenShare}
-                />
-            );
-        }
+        
 
         if (activeTab === 'favorite') {
             if (favoriteRecipes.length === 0) {
@@ -201,24 +205,10 @@ function HomeScreen() {
                 );
             }
             return (
-                <FlatList
-                    data={favoriteRecipes}
-                    keyExtractor={(item) => item.idRecipe}
-                    numColumns={2}
-                    columnWrapperStyle={styles.row}
-                    contentContainerStyle={styles.flatListContent}
-                    renderItem={({ item }) => {
-                        const isFav = favoriteRecipes.some(fav => fav.idRecipe === item.idRecipe);
-                        return (
-                            <RecipeCard 
-                                recipe={{ ...item, isFavorite: isFav }} 
-                                onPress={() => handleRecipeDetail(item)} 
-                                isMine={false} 
-                                showFavoriteBtn={true} 
-                                onToggleFavorite={() => handleToggleFavorite(item)} 
-                            />
-                        );
-                    }}
+                <CommunityFeed 
+                    mode="favorites"
+                    onPressDetailPost={handleRecipeDetail} 
+                    onFavoriteChange={handleToggleFavorite}
                 />
             );
         }
@@ -292,7 +282,7 @@ function HomeScreen() {
                 {renderContent()}
             </View>
 
-            {/* Các Modals */}
+
             <RecipeDetailModal 
                 isOpen={isDetalModalOpen}
                 recipe={selectedRecipe}
@@ -300,6 +290,8 @@ function HomeScreen() {
                     setIsDetalModalOpen(false);
                     setSelectedRecipe(null);
                 }}
+                showSocialFeatures={activeTab === 'community' || activeTab === 'favorite'}
+
             />
             <ShareRecipeModal 
               isOpen={isShareModalOpen}
@@ -310,7 +302,7 @@ function HomeScreen() {
         </SafeAreaView>
     );
 }
-// Giữ nguyên Styles cũ của bạn bên dưới...
+
 const styles = StyleSheet.create({
     container: { flex: 1 },
     headerContainer: {

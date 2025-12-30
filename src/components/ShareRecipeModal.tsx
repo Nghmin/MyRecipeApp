@@ -22,7 +22,7 @@ interface ShareRecipeModalProps {
   isOpen: boolean;
   onClose: () => void;
   recipes: Recipe[];
-  onShare: (recipeId: Recipe) => void;
+  onShare: (recipe: Recipe) => void;
 }
 
 export function ShareRecipeModal({ isOpen, onClose, recipes, onShare }: ShareRecipeModalProps) {
@@ -30,9 +30,12 @@ export function ShareRecipeModal({ isOpen, onClose, recipes, onShare }: ShareRec
 
   const handleShare = () => {
     if (selectedRecipe) {
-      onShare(selectedRecipe);
-      setSelectedRecipe(null);
-      onClose();
+      const recipeToShare = recipes.find(r => r.idRecipe === selectedRecipe);
+      if (recipeToShare) {
+        onShare(recipeToShare);
+        setSelectedRecipe(null);
+        onClose();
+      }
     }
   };
 
@@ -258,5 +261,5 @@ const styles = StyleSheet.create({
   },
   disabledBtn: {
     backgroundColor: '#E5E7EB',
-  },
+  }
 });
