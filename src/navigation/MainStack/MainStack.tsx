@@ -4,6 +4,7 @@ import React ,{useState , useEffect} from 'react';
 // import HomeScreen from '../../screens/HomeScreen.tsx';
 // import AccountScreen from '../../screens/AccountScreen.tsx';
 // import RecipeOfMySelfScreen from '../../screens/RecipeOfMySelfScreen.tsx';
+import MyPostsScreen from '../../screens/MyPostScreen.tsx';
 import LoginScreen from '../../screens/LoginScreen.tsx';
 import RegisterScreen from '../../screens/RegisterScreen.tsx';
 
@@ -27,6 +28,7 @@ function MainStack() {
         <stacks.Navigator screenOptions={{ headerShown: false }}>
             {user? (<>
                 <stacks.Screen name="TabView" component={MainTabView}/>
+                <stacks.Screen name="MyPosts" component={MyPostsScreen}/>
                 {/* <stacks.Screen name="Home" component={HomeScreen} />
                 <stacks.Screen name="My Recipe" component={RecipeOfMySelfScreen}/>
                 <stacks.Screen name="Account" component={AccountScreen} /> */}

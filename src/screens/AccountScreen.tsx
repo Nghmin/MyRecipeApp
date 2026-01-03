@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { 
-  StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, 
+  StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, ImageBackground,SafeAreaView
 } from 'react-native';
 
 import LinearGradient from 'react-native-linear-gradient';
@@ -18,7 +18,7 @@ import Config from "react-native-config";
 
 
 import { signOut } from 'firebase/auth';
-import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDoc, } from 'firebase/firestore';
 
 const menuItems = [
   { icon: Users, label: 'Thông tin cá nhân', desc: 'Chỉnh sửa thông tin', colors: ['#3b82f6', '#06b6d4'] },
@@ -29,21 +29,45 @@ const menuItems = [
   { icon: Info, label: 'Trợ giúp', desc: 'Câu hỏi thường gặp', colors: ['#14b8a6', '#06b6d4'] },
 ];
 
+const AccountBackground = require('../assets/themeAccount.jpg');
+
+
 export default function AccountScreen() {
   const [recipeCount, setRecipeCount] = React.useState(0);
   const [isDetalModalOpen, setIsDetalModalOpen] = React.useState(false);
   const [userData, setUserData] = React.useState<User | null>(null);
-
+  const [totalLikes, setTotalLikes] = React.useState(0);
+  const [userPosts, setUserPosts] = React.useState([]);
   const AVT_DEFAULT = Config.AVT_DEFAULT!;
+
+
 
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return;
 
-    const q = query(collection(db, "Recipes"), where("idUser", "==", user.uid));
-    const unsubscribe = onSnapshot(q, (snapshot) => setRecipeCount(snapshot.size));
-    
-    return () => unsubscribe();
+    const qRecipes = query(
+      collection(db, "Recipes"), 
+      where("idUser", "==", user.uid)
+    );
+    const unsubscribeRecipes = onSnapshot(qRecipes, (snapshot) => setRecipeCount(snapshot.size));
+    const qPosts = query(
+      collection(db, "CommunityPosts"), 
+      where("idUser", "==", user.uid)
+    );
+    const unsubscribePosts = onSnapshot(qPosts, (snapshot) => {
+      let totalLikesCount = 0;
+      const postsList: any = [];
+
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        totalLikesCount += data.likesCount || 0;
+        postsList.push({ id: doc.id, name: data.name }); 
+      });
+      setTotalLikes(totalLikesCount);
+      setUserPosts(postsList);
+    })
+    return () => {unsubscribeRecipes();unsubscribePosts();};
   }, []);
 
   useFocusEffect(
@@ -51,6 +75,7 @@ export default function AccountScreen() {
       refreshData();
     }, [])
   );
+  
 
   const refreshData = async () => {
     try {
@@ -75,19 +100,19 @@ export default function AccountScreen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* Background Ngân Hà */}
-      <LinearGradient
-        colors={['#1e1b4b', '#4c1d95', '#1e3a8a']}
-        style={StyleSheet.absoluteFill}
-      />
-
+    
+    <SafeAreaView style={{ flex: 1 }}>
+      <ImageBackground 
+      source={AccountBackground}
+      style = {styles.background}
+      resizeMode="cover" 
+    >    
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header Profile */}
         <Animated.View entering={FadeInUp.delay(200)} style={styles.header}>
           <View style={styles.avatarWrapper}>
             <Image 
-              key={userData?.avatar} // Ép load lại khi URL thay đổi
+              key={userData?.avatar} 
               source={{ 
                 uri: (userData?.avatar && userData.avatar.trim() !== "") 
                   ? userData.avatar 
@@ -102,8 +127,8 @@ export default function AccountScreen() {
           {/* Stats Cards */}
           <View style={styles.statsContainer}>
             <StatCard value={recipeCount.toString()} label="Công thức" />
-            <StatCard value="0" label="Số lượt đăng" />
-            <StatCard value="0" label="Số lượt thích" />
+            <StatCard value={userPosts.length.toString()} label="Số lượt đăng" />
+            <StatCard value={totalLikes.toString()} label="Số lượt thích" />
           </View>
         </Animated.View>
 
@@ -132,7 +157,7 @@ export default function AccountScreen() {
 
           {/* Logout Button */}
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <LogOut size={20} color="#f87171" />
+            <LogOut size={20} color="#fd0505ff" />
             <Text style={styles.logoutText}>Đăng xuất</Text>
           </TouchableOpacity>
         </View>
@@ -144,7 +169,8 @@ export default function AccountScreen() {
         userData={userData}
         onUpdateSuccess={refreshData}
       />
-    </View>
+      </ImageBackground>
+    </SafeAreaView>
   );
 }
 
@@ -156,19 +182,32 @@ const StatCard = ({ value, label }: { value: string, label: string }) => (
 );
 
 const styles = StyleSheet.create({
+  background:{
+    flex: 1,
+  },
   scrollContent: { paddingBottom: 100, paddingTop: 40 },
-  header: { alignItems: 'center', marginBottom: 30 },
+  header: { 
+    alignItems: 'center', 
+    marginBottom: 30,
+    borderWidth: 1,
+    borderRadius: 15,
+    paddingBottom: 15,
+    paddingTop: 10, 
+    marginLeft:10 ,
+    marginRight:10,
+    backgroundColor: 'rgba(10, 6, 6, 0.38)',
+  },
   avatarWrapper: {
     width: 110, height: 110,
     borderRadius: 55,
-    borderWidth: 4, borderColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 4, borderColor: '#F97316',
     marginBottom: 15,
-    overflow: 'hidden', // Giúp ảnh bo tròn mượt hơn
+    overflow: 'hidden', 
     backgroundColor: 'rgba(255,255,255,0.1)'
   },
   avatar: { width: '100%', height: '100%' },
   userName: { color: 'white', fontSize: 24, fontWeight: 'bold' },
-  userEmail: { color: 'rgba(255,255,255,0.6)', fontSize: 14, marginTop: 4 },
+  userEmail: { color: 'rgba(249, 242, 242, 1)', fontSize: 14, marginTop: 4 },
   statsContainer: {
     flexDirection: 'row', gap: 10,
     marginTop: 25, paddingHorizontal: 20
@@ -176,16 +215,16 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1, backgroundColor: 'rgba(255,255,255,0.1)',
     padding: 15, borderRadius: 16,
-    alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)'
+    alignItems: 'center', borderWidth: 1, borderColor: '#F97316'
   },
   statValue: { color: 'white', fontSize: 18, fontWeight: 'bold' },
-  statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12 },
-  menuContainer: { paddingHorizontal: 20, gap: 12 },
+  statLabel: { color: 'rgba(249, 242, 242, 1)', fontSize: 12 },
+  menuContainer: { paddingHorizontal: 20, gap: 12 , },
   menuItem: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(10, 6, 6, 0.38)',
     padding: 12, borderRadius: 18,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)'
+    borderWidth: 1, borderColor: '#F97316'
   },
   iconBox: {
     width: 48, height: 48,
@@ -193,13 +232,13 @@ const styles = StyleSheet.create({
   },
   menuText: { flex: 1, marginLeft: 15 },
   menuLabel: { color: 'white', fontSize: 16, fontWeight: '600' },
-  menuDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 13 },
+  menuDesc: { color: 'rgba(249, 242, 242, 1)', fontSize: 13 },
   logoutButton: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    backgroundColor: 'rgba(239,68,68,0.15)',
+    backgroundColor: 'rgba(239, 68, 68, 0.38)',
     padding: 16, borderRadius: 18,
     marginTop: 20, gap: 10,
-    borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)'
+    borderWidth: 1, borderColor: '#F97316'
   },
-  logoutText: { color: '#f87171', fontSize: 16, fontWeight: 'bold' },
+  logoutText: { color: '#f40707ff', fontSize: 16, fontWeight: 'bold' },
 });

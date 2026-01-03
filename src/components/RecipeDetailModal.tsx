@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,29 +6,203 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  
   TextInput,
   Modal,
-  StatusBar
+  StatusBar,
+  Alert,
 } from 'react-native'; 
 import { ArrowLeft, Clock, ChefHat, Star } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+
+import { doc, getDoc ,deleteDoc} from 'firebase/firestore';
+
 import { Recipe } from '../models/Recipe';
 
+import { CommentItem } from './CommentItem';
 
+import { auth, db } from '../config/firebaseConfig';
+import Config from "react-native-config"; 
+
+import { collection, query, orderBy, onSnapshot ,addDoc ,increment,updateDoc , serverTimestamp} from 'firebase/firestore';
+
+const AVT_DEFAULT = Config.AVT_DEFAULT!;
 
 interface RecipeDetailProps {
   isOpen: boolean;       
-  recipe: Recipe | null; 
+  recipe: (Recipe & { postId?: string }) | null;
   onBack: () => void;    
   showSocialFeatures: boolean;
 }
 
-export function RecipeDetailModal({ isOpen, recipe, onBack,showSocialFeatures }: RecipeDetailProps) {
+export function RecipeDetailModal({ isOpen, recipe , onBack, showSocialFeatures }: RecipeDetailProps) {
   const [userRating, setUserRating] = useState(0);
-  const [comment, setComment] = useState('');
+  const [commentsList, setCommentsList] = useState<any[]>([]); 
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [inputComment, setInputComment] = useState('');
+  
+
+  const updateGlobalPostRating = useCallback(async (list: any[]) => {
+    if (!recipe?.postId) return;
+    try {
+      const ratedComments = list.filter(c => c.rating > 0);
+      let finalRating = 5.0; 
+      if (ratedComments.length > 0) {
+        const total = ratedComments.reduce((sum, item) => sum + item.rating, 0);
+        finalRating = parseFloat((total / ratedComments.length).toFixed(1));
+      }
+      const postRef = doc(db, "CommunityPosts", recipe.postId);
+      await updateDoc(postRef, {
+        rating: finalRating
+      });
+      
+      console.log("Đã cập nhật Rating Firestore:", finalRating);
+    } catch (error) {
+      console.error("Lỗi cập nhật Global Rating:", error);
+    }
+  },[recipe?.postId]);
+
+
+  useEffect(() => {
+    if (!recipe?.postId) return;
+    const q = query(
+      collection(db, "CommunityPosts", recipe.postId, "Comments"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCommentsList(list);
+      updateGlobalPostRating(list);
+    });
+
+    return () => unsubscribe();
+  }, [recipe?.postId, updateGlobalPostRating]);
 
   if (!recipe) return null;
+
+  // const handleSendComment = async () => {
+  //   const user = auth.currentUser;
+  //   if (!inputComment.trim() || !user || !recipe?.postId) return;
+    
+  //   try {
+  //     let finalName = 'Người dùng';
+  //     let finalAvatar = AVT_DEFAULT;
+  //     const userDocRef = doc(db, "Users", user.uid);
+  //     const userDocSnap = await getDoc(userDocRef);
+  //     if (userDocSnap.exists()) {
+  //           const userData = userDocSnap.data();
+  //           finalName = userData.name || userData.userName || 'Người dùng'; 
+  //           finalAvatar = userData.avatar || userData.userAvatar || AVT_DEFAULT;
+  //       }
+  //     const commentData = {
+  //       rating: userRating || 0,
+  //       content: inputComment.trim(),
+  //       userId: user.uid,
+  //       userName: finalName,
+  //       userAvatar:finalAvatar,
+  //       createdAt: serverTimestamp()
+  //     };  
+
+  //     await addDoc(collection(db, "CommunityPosts", recipe.postId, "Comments"), commentData);
+  //     setInputComment(''); 
+  //     setUserRating(0);  
+  //     const postRef = doc(db, "CommunityPosts", recipe.postId);
+  //     await updateDoc(postRef, {
+  //       commentsCount: increment(1) 
+  //     });
+  //   } catch (error) {
+  //     console.error("Lỗi gửi bình luận:", error);
+  //   }
+  // };
+
+  const calculateAverageRating = () => {
+    if (commentsList.length === 0) return recipe.rating || 5.0;
+    const ratedComments = commentsList.filter(c => c.rating > 0);
+    if (ratedComments.length === 0) return recipe.rating || 5.0;
+
+    const total = ratedComments.reduce((sum, item) => sum + item.rating, 0);
+    return (total / ratedComments.length).toFixed(1);
+  };
+
+  
+  const averageRating = calculateAverageRating();
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+        if (!recipe?.postId) return;
+
+        const commentRef = doc(db, "CommunityPosts", recipe.postId, "Comments", commentId);
+        await deleteDoc(commentRef);
+
+        const postRef = doc(db, "CommunityPosts", recipe.postId);
+        await updateDoc(postRef, {
+            commentsCount: increment(-1)
+        });
+
+        Alert.alert("Thành công", "Đã xóa bình luận.");
+    } catch (error) {
+        console.error("Lỗi khi xóa bình luận:", error);
+        Alert.alert("Lỗi", "Không thể xóa bình luận lúc này.");
+    }
+  };
+  const handlePrepareEdit = (comment: any) => {
+    setInputComment(comment.content);
+    setUserRating(comment.rating);
+    setEditingCommentId(comment.id);
+  };
+
+  const handleActionComment = async () => {
+    const user = auth.currentUser;
+    if (!inputComment.trim() || !user || !recipe?.postId) return;
+
+    try {
+      const postRef = doc(db, "CommunityPosts", recipe.postId);
+
+      if (editingCommentId) {
+        // Sửa comment
+        const commentRef = doc(db, "CommunityPosts", recipe.postId, "Comments", editingCommentId);
+        await updateDoc(commentRef, {
+          content: inputComment.trim(),
+          rating: userRating,
+          updatedAt: serverTimestamp()
+        });
+        setEditingCommentId(null);
+        Alert.alert("Thành công", "Đã cập nhật bình luận");
+      } else {
+        let finalName = 'Người dùng';
+        let finalAvatar = AVT_DEFAULT;
+
+        // Lấy thông tin từ bảng Users
+        const userDocRef = doc(db, "Users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          finalName = userData.name || userData.userName || 'Người dùng';
+          finalAvatar = userData.avatar || userData.userAvatar || AVT_DEFAULT;
+        }
+
+        const commentData = {
+          rating: userRating || 0,
+          content: inputComment.trim(),
+          userId: user.uid,
+          userName: finalName,
+          userAvatar: finalAvatar,
+          createdAt: serverTimestamp()
+        };
+
+        await addDoc(collection(db, "CommunityPosts", recipe.postId, "Comments"), commentData);
+        await updateDoc(postRef, {
+          commentsCount: increment(1)
+        });
+      }
+      setInputComment('');
+      setUserRating(0);
+    } catch (error) {
+      console.error("Lỗi thao tác bình luận:", error);
+      Alert.alert("Lỗi", "Không thể thực hiện thao tác này.");
+    }
+};
 
   return (
     <Modal
@@ -40,21 +214,18 @@ export function RecipeDetailModal({ isOpen, recipe, onBack,showSocialFeatures }:
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
       <View style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>         
           {/* --- Phần Hình ảnh Header --- */}
           <View style={styles.imageContainer}>
             <Image 
-              source={{ uri: recipe.image || 'https://via.placeholder.com/400' }} 
+              source={{ uri: recipe.image || AVT_DEFAULT }} 
               style={styles.headerImage} 
               resizeMode="cover"
             />
-            {/* Lớp phủ gradient để làm nổi bật chữ trắng */}
             <LinearGradient
               colors={['rgba(0,0,0,0.4)', 'transparent', 'rgba(0,0,0,0.8)']}
               style={styles.gradientOverlay}
-            />
-            
+            /> 
             {/* Nút Quay lại */}
             <TouchableOpacity style={styles.backButton} onPress={onBack} activeOpacity={0.7}>
               <ArrowLeft size={24} color="#1F2937" />
@@ -74,7 +245,7 @@ export function RecipeDetailModal({ isOpen, recipe, onBack,showSocialFeatures }:
                 </View>
                 <View style={styles.infoItem}>
                   <Star size={16} color="#FBBF24" fill="#FBBF24" />
-                  <Text style={styles.infoText}>{recipe.rating || 5.0}</Text>
+                  <Text style={styles.infoText}>{averageRating}</Text>
                 </View>
               </View>
             </View>
@@ -140,21 +311,51 @@ export function RecipeDetailModal({ isOpen, recipe, onBack,showSocialFeatures }:
                     </TouchableOpacity>
                   ))}
                 </View>
-                {userRating > 0 && (
+                {userRating > 0 && (<>
                   <View style={styles.reviewInputContainer}>
+                    {editingCommentId && (<>
+                      <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5}}>
+                          <Text style={{color: '#F97316', fontWeight: 'bold'}}>Đang sửa bình luận...</Text>
+                          <TouchableOpacity onPress={() => {
+                              setEditingCommentId(null);
+                              setInputComment('');
+                              setUserRating(0);
+                          }}>
+                              <Text style={{color: '#EF4444'}}>Hủy sửa</Text>
+                          </TouchableOpacity>
+                      </View>
+                    </>)}
                     <TextInput
                       placeholder="Chia sẻ cảm nghĩ của bạn..."
+                      placeholderTextColor="#9CA3AF"
                       multiline
-                      numberOfLines={3}
                       style={styles.input}
-                      value={comment}
-                      onChangeText={setComment}
+                      value={inputComment}
+                      onChangeText={setInputComment}
                     />
-                    <TouchableOpacity style={styles.submitButton}>
-                      <Text style={styles.submitButtonText}>Gửi đánh giá</Text>
+                    <TouchableOpacity 
+                        style={[styles.submitButton, editingCommentId && {backgroundColor: '#10B981'}]} 
+                        onPress={handleActionComment}
+                    >
+                        <Text style={styles.submitButtonText}>
+                            {editingCommentId ? "Cập nhật bình luận" : "Gửi đánh giá"}
+                        </Text>
                     </TouchableOpacity>
                   </View>
-                )}
+                </>)}
+                <View style={[styles.card, { marginBottom: 50 }]}>
+                    <Text style={styles.sectionTitle}>Bình luận ({commentsList.length})</Text>
+                    {commentsList.map((item) => (
+                      <CommentItem 
+                        key={item.id} 
+                        comment={item} 
+                        isMine ={item.userId === auth.currentUser?.uid} 
+                        isPostOwner ={recipe?.idUser === auth.currentUser?.uid} 
+                        onDelete={handleDeleteComment}
+                        onEdit={handlePrepareEdit}
+                      />
+                    ))}
+                  </View>
               </View>
             )}
 
@@ -362,5 +563,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9CA3AF',
     fontStyle: 'italic'
-  }
+  },
+  
 });

@@ -6,9 +6,11 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { Clock, Star } from 'lucide-react-native';
+import { Clock} from 'lucide-react-native';
 import IconMaterial from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Recipe } from '../models/Recipe';
+
+import { formatRelativeTime } from '../utils/dateUtils';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -36,9 +38,10 @@ export const RecipeCard = React.memo(({ recipe, onPress, onDelete, onEdit ,isMin
         />
 
         {/*Đánh giá*/}
-        <View style={styles.ratingBadge}>
-          <Star size={10} color="#FBBF24" fill="#FBBF24" />
-          <Text style={styles.ratingText}>{recipe.rating || 5.0}</Text>
+        <View style={styles.timingBadge}>
+          <Text style={{ color: '#9CA3AF', fontSize: 11 }}>
+                    {formatRelativeTime(recipe.createdAtRecipe)}
+          </Text>
         </View>
         
         {/*Tên và thời gian làm */}
@@ -92,22 +95,18 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 140,
   },
-  ratingBadge: {
+  timingBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    left: 0,
     backgroundColor: 'rgba(255,255,255,0.9)',
     paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 10,
+    paddingVertical: 2,
+    borderTopRightRadius: 15,
+    borderTopLeftRadius:15,
+    borderBottomRightRadius: 15,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-  },
-  ratingText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#1F2937',
   },
   cardInfo: {
     padding: 10,

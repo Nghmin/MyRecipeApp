@@ -1,6 +1,6 @@
 import { 
     StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, 
-    Image, FlatList, ScrollView, Alert 
+    Image, FlatList, ScrollView, Alert ,ImageBackground
 } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,9 +25,10 @@ import LinearGradient from 'react-native-linear-gradient';
 import {fetchRandomRecipeAPI} from '../api/fetchRandomRecipeAPI';
 import { FavoriteService } from '../services/favoriteService';
 
- const AVT_DEFAULT = Config.AVT_DEFAULT!;
-
-function HomeScreen() {
+const AVT_DEFAULT = Config.AVT_DEFAULT!;
+const HomeBackground = require('../assets/themeHome.jpg');
+const HeaderHomeBackground = require('../assets/themeHeaderHome.jpg');
+function HomeScreen({navigation} :any) {
     const [userName, setUserName] = React.useState('...');
     const [userAvatar, setUserAvatar] = React.useState(AVT_DEFAULT);
     const [apiRecipes, setApiRecipes] = React.useState<Recipe[]>([]);
@@ -37,9 +38,8 @@ function HomeScreen() {
     const [isDetalModalOpen, setIsDetalModalOpen] = React.useState(false);
     
     const [favoriteRecipes, setFavoriteRecipes] = React.useState<any[]>([]);
-    const [activeTab, setActiveTab] = React.useState('discover');
+    const [activeTab, setActiveTab] = React.useState('community');
 
-    // Các state bổ sung để chạy tính năng Share
     const [userRecipes, setUserRecipes] = React.useState<Recipe[]>([]);
     const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
 
@@ -110,6 +110,7 @@ function HomeScreen() {
     };
 
     const handleDiscover = async () => {
+        setActiveTab('discover')
         setIsLoading(true);
         const data = await fetchRandomRecipeAPI();
         if (data) {
@@ -137,6 +138,7 @@ function HomeScreen() {
           userAvatar: userAvatar, 
           sharedAt: serverTimestamp(),
           likesCount: 0,
+          commentsCount: 0,
           likedBy: [] 
         };
 
@@ -150,7 +152,7 @@ function HomeScreen() {
     };
 
     const renderContent = () => {
-        if (isLoading && apiRecipes.length === 0 && activeTab === 'discover') {
+        if (isLoading && apiRecipes.length === 0 && activeTab === 'community' ) {
             return <ActivityIndicator size="large" color="#F97316" style={{ marginTop: 50 }} />;
         }
 
@@ -215,18 +217,28 @@ function HomeScreen() {
     };
 
     return (
+        <ImageBackground 
+                source={HomeBackground} 
+                style={styles.background}
+                resizeMode="cover" 
+        >
         <SafeAreaView style={styles.container}>
-            <LinearGradient
+            {/* <LinearGradient
                 colors={['#1e1b4b', '#4c1d95', '#1e3a8a']}
                 style={StyleSheet.absoluteFill}
-            />
+            /> */}
             
             {/* Header giữ nguyên như cũ */}
             <LinearGradient
-                colors={['#000428', '#004e92', '#0f0c29']} 
+                colors={['#21254cff', '#004e92', '#0f0c29']} 
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
                 style={styles.headerContainer}
             >
+                <ImageBackground 
+                    source={HeaderHomeBackground}
+                    style={styles.headerbackground}
+                    resizeMode="cover"
+                >
                 <View style={styles.headerTop}>
                     <View style={styles.avatarHeader}> 
                         {userAvatar ? (
@@ -237,10 +249,10 @@ function HomeScreen() {
                     </View>
                     <View style={styles.buttonHeader}>
                         <TouchableOpacity style={styles.buttonSearch}>
-                            <IconMaterial name='home-search' size={20} color='white' />
+                            <IconMaterial name='home-search' size={28} color='white' />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.buttonFavorite}>
-                            <IconMaterial name='heart' size={20} color='white' />
+                        <TouchableOpacity style={styles.buttonFavorite} onPress={() => navigation.navigate('MyPosts')}>
+                            <IconMaterial name='bag-personal' size={28} color='white' />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -250,6 +262,7 @@ function HomeScreen() {
                         Hi, {userName}
                     </Text>
                 </View>
+                </ImageBackground>
             </LinearGradient>
 
             {/* Menu ngang */}
@@ -291,7 +304,6 @@ function HomeScreen() {
                     setSelectedRecipe(null);
                 }}
                 showSocialFeatures={activeTab === 'community' || activeTab === 'favorite'}
-
             />
             <ShareRecipeModal 
               isOpen={isShareModalOpen}
@@ -299,20 +311,40 @@ function HomeScreen() {
               recipes={userRecipes}
               onShare={ handleShareToCommunity}
             />
+            
         </SafeAreaView>
+        </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
+    container: { 
+        flex: 1,
+        paddingBottom: 30,  
+    },
+    background: {
+        flex: 1,
+        
+    },
     headerContainer: {
-        paddingTop: 10, 
-        paddingHorizontal: 20,
-        paddingBottom: 15,
+        // paddingTop: 10, 
+        // paddingHorizontal: 20,
+        // paddingBottom: 15,
+        // borderBottomLeftRadius: 30,
+        // borderBottomRightRadius: 30,
+        // marginBottom: 10,
+        // elevation: 10,
+
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
         marginBottom: 10,
         elevation: 10,
+        overflow: 'hidden',
+    },
+    headerbackground: {
+        width: '100%',
+        paddingTop: 15, 
+        paddingBottom: 15,
     },
     headerTop: {
         flexDirection: 'row',
@@ -328,11 +360,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(255,255,255,0.1)',
-        overflow: 'hidden', // Quan trọng để ảnh không tràn khỏi border radius
+        overflow: 'hidden',
         marginBottom: 10,
+        marginLeft: 15,
     },
-    avatar: { width: '100%', height: '100%' },
-    buttonHeader: { flexDirection: "row", gap: 12 },
+    avatar: { width: '100%', height: '100%' , },
+    buttonHeader: { flexDirection: "row", gap: 12 , marginBottom: 25, marginRight: 15,},
     buttonFavorite: {
         width: 42, height: 42, backgroundColor: '#F97316',
         borderRadius: 21, justifyContent: 'center', alignItems: 'center',
@@ -341,20 +374,24 @@ const styles = StyleSheet.create({
         width: 42, height: 42, backgroundColor: '#F97316',
         borderRadius: 21, justifyContent: 'center', alignItems: 'center',
     },
-    userInfo: { marginTop: 5 },
-    horizontalMenu: { paddingVertical: 10, paddingLeft: 10 },
+    userInfo: { marginTop: 5 ,marginLeft : 15, },
+    horizontalMenu: { paddingVertical: 2, paddingLeft: 10 , paddingBottom: 5, },
     menuItem: {
-        backgroundColor: 'rgba(255,255,255,0.15)',
+        backgroundColor: 'rgba(29, 8, 8, 0.56)',
         paddingHorizontal: 18, paddingVertical: 10,
         borderRadius: 25, marginRight: 12,
-        borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)',
+        borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.29)',
     },
     menuBtn: { backgroundColor: '#F97316', borderColor: '#FFF' },
     menuText: { color: 'white', fontWeight: 'bold', fontSize: 14 },
     flatListContent: { paddingBottom: 100, paddingTop: 5 },
     row: { justifyContent: 'space-between', paddingHorizontal: 15 },
     emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 80 },
-    emptyText: { fontSize: 16, fontWeight: '600', color: '#E5E7EB', marginTop: 15 },
+    emptyText: { fontSize: 16, fontWeight: '600', color: '#f4f2f0ff', marginTop: 15 ,
+        backgroundColor: 'rgba(48, 40, 40, 0.36)',
+        padding : 8,
+        borderRadius:15,
+    },
 });
 
 export default HomeScreen;

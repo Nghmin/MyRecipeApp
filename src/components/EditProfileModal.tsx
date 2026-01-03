@@ -2,7 +2,7 @@ import React, { useState , useEffect} from 'react';
 import { doc,updateDoc } from 'firebase/firestore';
 
 import { launchImageLibrary  } from 'react-native-image-picker';
-import { uploadImageToSupabase } from '../services/uploadService'; 
+import { uploadImageToSupabase , deleteImageFromSupabase} from '../services/uploadService'; 
 
 import { X, Camera,Check } from 'lucide-react-native';
 
@@ -59,9 +59,16 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
       if (!userId || !userData) return;
 
       let finalAvatarUrl = avatarUri;
-      if (avatarUri && (avatarUri.startsWith('file') || avatarUri.startsWith('content'))) {
-        const remoteUrl = await uploadImageToSupabase(avatarUri, 'user-images', userId);
-        if (remoteUrl) finalAvatarUrl = remoteUrl;
+      const isNewImageSelected = avatarUri && (avatarUri.startsWith('file') || avatarUri.startsWith('content'));
+
+      if (isNewImageSelected) {
+        const remoteUrl = await uploadImageToSupabase(avatarUri!, 'user-images', userId);
+        if (remoteUrl) {
+          if (userData.avatar && userData.avatar.includes('supabase.co')) {
+            await deleteImageFromSupabase(userData.avatar);
+          }
+          finalAvatarUrl = remoteUrl;
+        }
       }
       const UserRef = doc(db, "Users", userData.idUser);
       const updatedData = {
@@ -73,7 +80,7 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
       await updateDoc(UserRef, updatedData);
       
       Alert.alert("Thành công", "Đã cập nhật hồ sơ!");
-      onUpdateSuccess(); // Hàm này sẽ gọi refreshData ở AccountScreen
+      onUpdateSuccess(); 
       onClose();
     } catch (error: any) {
       console.error(error);

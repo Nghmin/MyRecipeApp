@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, Alert, FlatList ,TextInput
+  StyleSheet,ImageBackground ,Text, View, TouchableOpacity, ActivityIndicator, Alert, FlatList ,TextInput
 } from 'react-native';
 // import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import LinearGradient from 'react-native-linear-gradient';
+// import LinearGradient from 'react-native-linear-gradient';
 import { ChefHat, Plus } from 'lucide-react-native';
 import IconMaterial from 'react-native-vector-icons/MaterialCommunityIcons';
 //
@@ -21,6 +21,7 @@ import { RecipeCard } from '../components/RecipeCard';
 import { FavoriteService } from '../services/favoriteService';
 import { deleteImageFromSupabase } from '../services/uploadService';
 
+const MyRecipeBackground = require('../assets/themeMyRecipe.jpg');
 
 export default function RecipeOfMySelfScreen() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -150,8 +151,8 @@ export default function RecipeOfMySelfScreen() {
     return (
       <View style={styles.emptyContainer}>
         <ChefHat size={80} color="#FFEDD5" /> 
-        <Text style={styles.emptyText}>Chưa có công thức nào.</Text>
-        <Text style={styles.emptySubText}>Bấm nút "+" để bắt đầu nấu nhé!</Text>
+          <Text style={styles.emptyText}>Chưa có công thức nào.</Text>
+          <Text style={styles.emptySubText}>Bấm nút "+" để bắt đầu nấu nhé!</Text>
       </View>
     );
   }
@@ -160,7 +161,7 @@ export default function RecipeOfMySelfScreen() {
   if (filteredRecipes.length === 0 && searchQuery.length > 0) {
     return (
       <View style={styles.emptyContainer}>
-        <IconMaterial name="database-search-outline" size={80} color="#FFEDD5" />
+        <IconMaterial name="database-search-outline" size={80} color="#fb8e00ff" />
         <Text style={styles.emptyText}>Không tìm thấy món "{searchQuery}"</Text>
         <Text style={styles.emptySubText}>Hãy thử tìm tên khác xem sao nhé!</Text>
       </View>
@@ -195,84 +196,95 @@ export default function RecipeOfMySelfScreen() {
 };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#1e1b4b', '#4c1d95', '#1e3a8a']}
-        style={StyleSheet.absoluteFill}
-      />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerIcon}>
-          <ChefHat size={28} color="#FFF" />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.headerTitle}>Công Thức Của Tôi</Text>
-          <Text style={styles.headerSubtitle}>Lưu giữ hương vị riêng của bạn</Text>
-        </View>
-        <TouchableOpacity 
-        style={styles.findingButtonHeader}
-        onPress ={() =>{
-          setIsSearchVisible(!isSearchVisible)
-          if(isSearchVisible) setSearchQuery('')
-        }}>
-          <IconMaterial name={isSearchVisible ? 'close' : 'book-search'} size={isSearchVisible ? 24 : 30} color='white' />
-        </TouchableOpacity>
-      </View>
-      {isSearchVisible && (
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <IconMaterial name="magnify" size={24} color="#6B7280" />
-            <TextInput
-              placeholder="Tìm kiếm công thức của bạn ..."
-              placeholderTextColor="#9CA3AF"
-              style={styles.searchInput}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoFocus={true}
-            />
+    <ImageBackground 
+            source={MyRecipeBackground} 
+            style={styles.background}
+            resizeMode="cover" 
+        >
+      <SafeAreaView style={styles.container}>
+        
+        {/* <LinearGradient
+          colors={['#1e1b4b', '#4c1d95', '#1e3a8a']}
+          style={StyleSheet.absoluteFill}
+        /> */}
+        
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerIcon}>
+            <ChefHat size={28} color="#FFF" />
           </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>Công Thức Của Tôi</Text>
+            <Text style={styles.headerSubtitle}>Lưu giữ hương vị riêng của bạn</Text>
+          </View>
+          <TouchableOpacity 
+          style={styles.findingButtonHeader}
+          onPress ={() =>{
+            setIsSearchVisible(!isSearchVisible)
+            if(isSearchVisible) setSearchQuery('')
+          }}>
+            <IconMaterial name={isSearchVisible ? 'close' : 'book-search'} size={isSearchVisible ? 24 : 30} color='white' />
+          </TouchableOpacity>
         </View>
-      )}
+        {isSearchVisible && (
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <IconMaterial name="magnify" size={24} color="#6B7280" />
+              <TextInput
+                placeholder="Tìm kiếm công thức của bạn ..."
+                placeholderTextColor="#9CA3AF"
+                style={styles.searchInput}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoFocus={true}
+              />
+            </View>
+          </View>
+        )}
 
-      {renderContent()}
+        {renderContent()}
 
-      {/* Floating Action Button */}
-      <TouchableOpacity 
-        onPress={() => setIsAddModalOpen(true)}
-        style={styles.buttonAddRecipe} 
-        activeOpacity={0.8}
-      >
-        <Plus size={32} color="#FFF" strokeWidth={3} />
-      </TouchableOpacity>
+        {/* Floating Action Button */}
+        <TouchableOpacity 
+          onPress={() => setIsAddModalOpen(true)}
+          style={styles.buttonAddRecipe} 
+          activeOpacity={0.8}
+        >
+          <Plus size={32} color="#FFF" strokeWidth={3} />
+        </TouchableOpacity>
 
-      {/* Modals */}
-      <AddRecipeModal 
-        isOpen={isAddModalOpen} 
-        initialData={editingRecipe}
-        onClose={() => {
-          setIsAddModalOpen(false);
-          setEditingRecipe(null);
-        }}
-        onAddRecipe={handleAddRecipeSuccess} 
-      />
-      
-      <RecipeDetailModal 
-        isOpen={isDetalModalOpen}
-        recipe={selectedRecipe}
-        onBack={() => {
-          setIsDetalModalOpen(false);
-          setSelectedRecipe(null);
-        }}
-        showSocialFeatures={false}
-      />
-    </SafeAreaView>
+        {/* Modals */}
+        <AddRecipeModal 
+          isOpen={isAddModalOpen} 
+          initialData={editingRecipe}
+          onClose={() => {
+            setIsAddModalOpen(false);
+            setEditingRecipe(null);
+          }}
+          onAddRecipe={handleAddRecipeSuccess} 
+        />
+        
+        <RecipeDetailModal 
+          isOpen={isDetalModalOpen}
+          recipe={selectedRecipe}
+          onBack={() => {
+            setIsDetalModalOpen(false);
+            setSelectedRecipe(null);
+          }}
+          showSocialFeatures={false}
+        />
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    
+  },
+  background: {
+    flex: 1, 
   },
   header: {
     flexDirection: 'row',
@@ -303,7 +315,7 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     backgroundColor: '#F97316',
-    borderRadius: 12,
+    borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -317,27 +329,27 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 80,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#9CA3AF',
+    color: '#fffefdff',
     marginTop: 10,
+    
   },
   emptySubText: {
-    fontSize: 14,
-    color: '#D1D5DB',
+    fontSize: 16,
+    color: '#ffffffff',
     textAlign: 'center',
-    paddingHorizontal: 40,
   },
   buttonAddRecipe: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 95,
     right: 25,
-    width: 65,
-    height: 65,
+    width: 55,
+    height: 55,
     backgroundColor: '#F97316',
     borderRadius: 33,
     justifyContent: 'center',
