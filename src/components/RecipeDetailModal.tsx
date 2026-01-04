@@ -9,7 +9,6 @@ import {
   TextInput,
   Modal,
   StatusBar,
-  Alert,
 } from 'react-native'; 
 import { ArrowLeft, Clock, ChefHat, Star } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -21,7 +20,9 @@ import { Recipe } from '../models/Recipe';
 import { CommentItem } from './CommentItem';
 
 import { auth, db } from '../config/firebaseConfig';
-import Config from "react-native-config"; 
+import Config from "react-native-config";
+import { toastConfig } from '../config/ToastConfig';
+import Toast from 'react-native-toast-message';
 
 import { collection, query, orderBy, onSnapshot ,addDoc ,increment,updateDoc , serverTimestamp} from 'firebase/firestore';
 
@@ -78,42 +79,18 @@ export function RecipeDetailModal({ isOpen, recipe , onBack, showSocialFeatures 
     return () => unsubscribe();
   }, [recipe?.postId, updateGlobalPostRating]);
 
+  const toastShow = async ( type: string,title : string,text: string ) => {
+      Toast.show({
+          type: type,       
+          text1: title ,
+          text2: text,
+          position: 'top',    
+          topOffset: 60,
+          visibilityTime: 3000,
+      });
+  }
+
   if (!recipe) return null;
-
-  // const handleSendComment = async () => {
-  //   const user = auth.currentUser;
-  //   if (!inputComment.trim() || !user || !recipe?.postId) return;
-    
-  //   try {
-  //     let finalName = 'Người dùng';
-  //     let finalAvatar = AVT_DEFAULT;
-  //     const userDocRef = doc(db, "Users", user.uid);
-  //     const userDocSnap = await getDoc(userDocRef);
-  //     if (userDocSnap.exists()) {
-  //           const userData = userDocSnap.data();
-  //           finalName = userData.name || userData.userName || 'Người dùng'; 
-  //           finalAvatar = userData.avatar || userData.userAvatar || AVT_DEFAULT;
-  //       }
-  //     const commentData = {
-  //       rating: userRating || 0,
-  //       content: inputComment.trim(),
-  //       userId: user.uid,
-  //       userName: finalName,
-  //       userAvatar:finalAvatar,
-  //       createdAt: serverTimestamp()
-  //     };  
-
-  //     await addDoc(collection(db, "CommunityPosts", recipe.postId, "Comments"), commentData);
-  //     setInputComment(''); 
-  //     setUserRating(0);  
-  //     const postRef = doc(db, "CommunityPosts", recipe.postId);
-  //     await updateDoc(postRef, {
-  //       commentsCount: increment(1) 
-  //     });
-  //   } catch (error) {
-  //     console.error("Lỗi gửi bình luận:", error);
-  //   }
-  // };
 
   const calculateAverageRating = () => {
     if (commentsList.length === 0) return recipe.rating || 5.0;
@@ -138,11 +115,18 @@ export function RecipeDetailModal({ isOpen, recipe , onBack, showSocialFeatures 
         await updateDoc(postRef, {
             commentsCount: increment(-1)
         });
-
-        Alert.alert("Thành công", "Đã xóa bình luận.");
+        toastShow(
+            'success',
+            'Thành công!',
+            'Đã xóa bình luận 🎉.',
+        )
     } catch (error) {
         console.error("Lỗi khi xóa bình luận:", error);
-        Alert.alert("Lỗi", "Không thể xóa bình luận lúc này.");
+        toastShow(
+            'error',
+            'Lỗi!',
+            'Không thể xóa bình luận lúc này.',
+        )
     }
   };
   const handlePrepareEdit = (comment: any) => {
@@ -167,7 +151,11 @@ export function RecipeDetailModal({ isOpen, recipe , onBack, showSocialFeatures 
           updatedAt: serverTimestamp()
         });
         setEditingCommentId(null);
-        Alert.alert("Thành công", "Đã cập nhật bình luận");
+        toastShow(
+            'success',
+            'Thành công!',
+            'Đã cập nhật bình luận 🎉.',
+        )
       } else {
         let finalName = 'Người dùng';
         let finalAvatar = AVT_DEFAULT;
@@ -200,7 +188,11 @@ export function RecipeDetailModal({ isOpen, recipe , onBack, showSocialFeatures 
       setUserRating(0);
     } catch (error) {
       console.error("Lỗi thao tác bình luận:", error);
-      Alert.alert("Lỗi", "Không thể thực hiện thao tác này.");
+      toastShow(
+          'error',
+          'Lỗi!',
+          'Không thể thực hiện thao tác này.',
+      )
     }
 };
 
@@ -362,6 +354,7 @@ export function RecipeDetailModal({ isOpen, recipe , onBack, showSocialFeatures 
           </LinearGradient>
         </ScrollView>
       </View>
+      <Toast config={toastConfig} />
     </Modal>
   );
 }

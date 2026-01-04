@@ -8,12 +8,15 @@ import { X, Camera,Check } from 'lucide-react-native';
 
 import { auth , db} from '../config/firebaseConfig';
 import Config from "react-native-config"; 
+import {toastConfig} from '../config/ToastConfig';
+
+import Toast from 'react-native-toast-message';
 
 import { User } from '../models/User';
 
 import { 
   Modal, View, Text, TextInput, TouchableOpacity,
-   StyleSheet, Platform, KeyboardAvoidingView, Alert , Image, ActivityIndicator ,
+   StyleSheet, Platform, KeyboardAvoidingView , Image, ActivityIndicator ,
 } from 'react-native';
 
 interface EditUserModalProps {
@@ -48,9 +51,25 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
     });
   };
 
+  const toastShow = async ( type: string,title : string,text: string ) => {
+      Toast.show({
+          type: type,       
+          text1: title ,
+          text2: text,
+          position: 'top',    
+          topOffset: 60,
+          visibilityTime: 3000,
+      });
+  }
+  
+
   const handleSubmit = async () => {
     if (!name.trim() || !email.trim()) {
-      Alert.alert('Lỗi', 'Vui lòng điền đầy đủ các thông tin bắt buộc (*)!');
+      toastShow(
+          'error',
+          'Lỗi!',
+          'Vui lòng điền đầy đủ các thông tin bắt buộc.',
+      )
       return;
     }
     setIsSubmitting(true);
@@ -78,13 +97,21 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
       };
 
       await updateDoc(UserRef, updatedData);
+      toastShow(
+          'success',
+          'Thành công!',
+          'Đã cập nhật hồ sơ.',
+      )
       
-      Alert.alert("Thành công", "Đã cập nhật hồ sơ!");
       onUpdateSuccess(); 
       onClose();
     } catch (error: any) {
       console.error(error);
-      Alert.alert("Lỗi", "Không thể cập nhật hồ sơ.");
+      toastShow(
+          'error',
+          'Lỗi!',
+          'Không thể cập nhật hồ sơ.',
+      )
     } finally {
       setIsSubmitting(false);
     }
@@ -132,6 +159,7 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
           </View>
         </KeyboardAvoidingView>
       </View>
+      <Toast config={toastConfig} />
     </Modal>
   );
 }

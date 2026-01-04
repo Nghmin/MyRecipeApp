@@ -137,11 +137,12 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 style={[
                   styles.iconCircle,
                   { backgroundColor: isActive ? tab.color : 'rgba(245, 108, 3, 0.33)' },
+                  { borderColor: isActive ? 'white' : '#F97316'}
                 ]}
               >
                 <IconComponent
-                  size={20}
-                  color={isActive ? 'white' : 'black'}
+                  size={25}
+                  color={isActive ? 'white' : '#F97316'}
                   strokeWidth={2.5}
                 />
               </View>
@@ -201,6 +202,7 @@ const styles = StyleSheet.create({
   iconCircle: {
     padding: 8,
     borderRadius: 12,
+    borderWidth:1,
     
   },
   label: {

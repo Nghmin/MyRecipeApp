@@ -1,14 +1,18 @@
 import React, { useState , useEffect} from 'react';
 import { 
   Modal, View, Text, TextInput, TouchableOpacity, ActivityIndicator, 
-  ScrollView, StyleSheet, Platform, KeyboardAvoidingView, Alert , Image
+  ScrollView, StyleSheet, Platform, KeyboardAvoidingView, Image
 } from 'react-native';
 import { X, Plus, Trash2 ,Camera } from 'lucide-react-native';
 import { auth , db} from '../config/firebaseConfig';
+import { toastConfig } from '../config/ToastConfig';
+
 import { doc, getDoc , setDoc, collection ,updateDoc } from 'firebase/firestore';
 import { User } from '../models/User';
 import { Recipe } from '../models/Recipe';
 import { launchImageLibrary  } from 'react-native-image-picker';
+
+import Toast from 'react-native-toast-message';
 
 import { uploadImageToSupabase , deleteImageFromSupabase} from '../services/uploadService';
  
@@ -80,6 +84,17 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe , initialData }: A
         });
     };
 
+  const toastShow = async ( type: string,title : string,text: string ) => {
+    Toast.show({
+          type: type,       
+          text1: title ,
+          text2: text,
+          position: 'top',    
+          topOffset: 60,
+          visibilityTime: 3000,
+    });
+  }
+
   // Hàm thêm ô nhập
   const handleAddIngredient = () => setIngredients([...ingredients, '']);
   
@@ -108,7 +123,11 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe , initialData }: A
   const handleSubmit = async () => {
     
     if (!name.trim() || !description.trim() || !prepTime.trim() || !category.trim()) {
-      Alert.alert('Lỗi', 'Vui lòng điền đầy đủ các thông tin bắt buộc (*)!');
+      toastShow(
+        'error',
+        'Lỗi thêm món!',
+        'Vui lòng điền đầy đủ các thông tin bắt buộc.',
+      );
       return;
     }
 
@@ -117,16 +136,31 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe , initialData }: A
     const filteredInstructions = instructions.filter(i => i.trim() !== '');
 
     if (filteredIngredients.length === 0 || filteredInstructions.length === 0) {
-      Alert.alert('Lỗi', 'Vui lòng thêm ít nhất 1 nguyên liệu và 1 bước hướng dẫn!');
+      toastShow(
+        'error',
+        'Lỗi thêm món!',
+        'Vui lòng thêm ít nhất 1 nguyên liệu và 1 bước hướng dẫn.',
+      );
       return;
     }
-    if (!imageUri) return Alert.alert("Hãy chọn ảnh!");
+    if (!imageUri) { 
+      toastShow(
+        'error',
+        'Lỗi thêm món!',
+        'Vui lòng thêm ảnh.',
+      );
+      return;
+    }
     setIsSubmitting(true);
 
     try {
     const currentId = auth.currentUser;
     if (!currentId) {
-      Alert.alert("Lỗi", "Bạn cần đăng nhập để sử dụng chức năng này");
+      toastShow(
+        'error',
+        'Thông báo!',
+        'Bạn cần đăng nhập để sử dụng chức năng này.',
+      );
       return;
     }
 
@@ -136,7 +170,11 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe , initialData }: A
       
       if (!remoteUrl) {
         setIsSubmitting(false);
-        Alert.alert("Lỗi", "Không thể upload ảnh lên Supabase. Vui lòng thử lại!");
+        toastShow(
+          'error',
+          'Lỗi!',
+          'Không thể upload ảnh lên. Vui lòng thử lại.',
+        );
         return;
       }
       if (initialData && initialData.image) {
@@ -159,9 +197,12 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe , initialData }: A
         instructions: filteredInstructions 
       };
       await updateDoc(recipeRef, updatedData);
-      Alert.alert("Thành công", "Đã cập nhật công thức!");
+      toastShow(
+        'succses',
+        'Thành công!',
+        `Bạn đã cập nhật công thức ${name}.`
+      );
     } else {
-      // LOGIC THÊM MỚI (ADD)
       const recipeRef = doc(collection(db, "Recipes"));
       const recipeId = recipeRef.id;
       const newRecipe: Recipe = {
@@ -182,7 +223,11 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe , initialData }: A
       };
       await setDoc(recipeRef, newRecipe);
       if (onAddRecipe) onAddRecipe(newRecipe);
-      Alert.alert("Thành công", "Đã thêm công thức nấu ăn mới!");
+      toastShow(
+        'succses',
+        'Thành công!',
+        'Bạn đã thêm một công thức mới.',
+      );
     }
       // Reset Form
       setName(''); setImageUri('') ; setDescription(''); setIsSubmitting(false); setPrepTime('');
@@ -190,7 +235,11 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe , initialData }: A
       onClose();
     } catch (error: any) {
       console.error("Lỗi khi thêm công thức:", error);
-      Alert.alert("Lỗi", "Không thể lưu công thức. Vui lòng thử lại!");
+      toastShow(
+        'error',
+        'Lỗi!',
+        'Không thể lưu công thức. Vui lòng thử lại.',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -323,7 +372,7 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe , initialData }: A
               </TouchableOpacity>
               <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={isSubmitting}>
                 {isSubmitting ? (
-                    <ActivityIndicator color="#FFF" /> // Hiện vòng quay thay vì chữ
+                    <ActivityIndicator color="#FFF" /> 
                 ) : (
                     <Text style={styles.submitBtnText}>Thêm món</Text>
                 )}
@@ -333,6 +382,7 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe , initialData }: A
           </View>
         </KeyboardAvoidingView>
       </View>
+      <Toast config={toastConfig} /> 
     </Modal>
   );
 }

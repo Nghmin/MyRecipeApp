@@ -1,6 +1,6 @@
 import { 
     StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, 
-    Image, FlatList, ScrollView, Alert ,ImageBackground
+    Image, FlatList, ScrollView,ImageBackground
 } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +8,8 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { auth, db } from '../config/firebaseConfig';
 import Config from "react-native-config"; 
+import Toast from 'react-native-toast-message';
+
 
 import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 
@@ -90,6 +92,18 @@ function HomeScreen({navigation} :any) {
         setIsShareModalOpen(true);
     };
 
+    
+    const toastShow = async ( type: string,title : string,text: string ) => {
+        Toast.show({
+            type: type,       
+            text1: title ,
+            text2: text,
+            position: 'top',    
+            topOffset: 60,
+            visibilityTime: 3000,
+        });
+    }
+
     const handleToggleFavorite = async (item: any) => {
         const isFav = favoriteRecipes.some(fav => fav.postId === item.postId);
         try {
@@ -124,10 +138,17 @@ function HomeScreen({navigation} :any) {
         const user = auth.currentUser;
         if (!user) return;
 
-        const checkQ = query(collection(db, "CommunityPosts"), where("idRecipe", "==", recipe.idRecipe), where("userId", "==", user.uid));
+        const checkQ = query(
+            collection(db, "CommunityPosts"), 
+            where("idRecipe", "==", recipe.idRecipe), 
+            where("idUser", "==", user.uid));
         const checkSnapshot = await getDocs(checkQ);
         if (!checkSnapshot.empty) {
-          Alert.alert("Thông báo", "Bạn đã chia sẻ món ăn này rồi!");
+            toastShow(
+                'error',
+                'Đăng bài thất bại!',
+                'Bạn đã chia sẻ món ăn này rồi!',
+            )
           return;
         }
 
@@ -143,10 +164,18 @@ function HomeScreen({navigation} :any) {
         };
 
         await addDoc(collection(db, "CommunityPosts"), postData);
-        Alert.alert("Thành công", "Món ăn đã được đăng lên cộng đồng!");
+        toastShow(
+            'success',
+            'Đăng bài thành công!',
+            'Mọi người sẽ thấy được món ngon từ bạn🎉.',
+        )
         setIsShareModalOpen(false);
       } catch (error) {
-        Alert.alert("Lỗi", "Không thể chia sẻ món ăn.");
+        toastShow(
+            'error',
+            'Đăng bài thất bại!',
+            'Không thể chia sẻ món ăn!',
+        )
         console.log(error);
       }
     };
@@ -327,14 +356,6 @@ const styles = StyleSheet.create({
         
     },
     headerContainer: {
-        // paddingTop: 10, 
-        // paddingHorizontal: 20,
-        // paddingBottom: 15,
-        // borderBottomLeftRadius: 30,
-        // borderBottomRightRadius: 30,
-        // marginBottom: 10,
-        // elevation: 10,
-
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
         marginBottom: 10,
@@ -352,8 +373,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     avatarHeader: {
-        width: 70,
-        height: 70,
+        width: 80,
+        height: 80,
         borderWidth: 2,
         borderColor: '#F97316',
         borderRadius: 20,
@@ -361,11 +382,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'rgba(255,255,255,0.1)',
         overflow: 'hidden',
-        marginBottom: 10,
+        marginBottom: 5,
         marginLeft: 15,
     },
     avatar: { width: '100%', height: '100%' , },
-    buttonHeader: { flexDirection: "row", gap: 12 , marginBottom: 25, marginRight: 15,},
+    buttonHeader: { flexDirection: "row", gap: 12 , marginBottom: 35, marginRight: 15,},
     buttonFavorite: {
         width: 42, height: 42, backgroundColor: '#F97316',
         borderRadius: 21, justifyContent: 'center', alignItems: 'center',
@@ -374,13 +395,13 @@ const styles = StyleSheet.create({
         width: 42, height: 42, backgroundColor: '#F97316',
         borderRadius: 21, justifyContent: 'center', alignItems: 'center',
     },
-    userInfo: { marginTop: 5 ,marginLeft : 15, },
+    userInfo: { marginLeft : 15, },
     horizontalMenu: { paddingVertical: 2, paddingLeft: 10 , paddingBottom: 5, },
     menuItem: {
         backgroundColor: 'rgba(29, 8, 8, 0.56)',
         paddingHorizontal: 18, paddingVertical: 10,
         borderRadius: 25, marginRight: 12,
-        borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.29)',
+        borderWidth: 1, borderColor: '#F97316',
     },
     menuBtn: { backgroundColor: '#F97316', borderColor: '#FFF' },
     menuText: { color: 'white', fontWeight: 'bold', fontSize: 14 },

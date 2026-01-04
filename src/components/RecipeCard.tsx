@@ -90,6 +90,8 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
     overflow: 'hidden', 
+    borderWidth:1,
+    borderColor :'#F97316',
   },
   cardImage: {
     width: '100%',

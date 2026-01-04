@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { 
   StyleSheet, Text, View, TextInput, TouchableOpacity, 
-  KeyboardAvoidingView, Platform, ScrollView, Alert 
+  KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { auth , db} from '../config/firebaseConfig';
-import Config from "react-native-config"; 
 
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth , db} from '../config/firebaseConfig';
+import Config from "react-native-config";
+import { getAuthErrorMessage } from '../config/authErrors';
+
+import { createUserWithEmailAndPassword} from 'firebase/auth';
 import { User } from '../models/User';
 import { doc, setDoc } from 'firebase/firestore';
 
@@ -18,21 +21,48 @@ const RegisterScreen = ({ navigation } : any) => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 // Kiểm tra tính hợp lệ của dữ liệu đăng ký
+  const toastShow = async ( type: string,title : string,text: string ) => {
+    Toast.show({
+          type: type,       
+          text1: title ,
+          text2: text,
+          position: 'top',    
+          topOffset: 60,
+          visibilityTime: 2500,
+    });
+  }
+
   const checkValidRegister = async () => {
     if(!user.trim() && !email.trim() && !password.trim()){
-      Alert.alert("Lỗi Đăng Ký", "Vui lòng điền đầy đủ thông tin.");
+      toastShow (
+        'error',
+        'Lỗi Đăng Ký',
+        'Vui lòng điền đầy đủ thông tin.'
+      )
       return false;
     }
     else if(!user.trim()){
-      Alert.alert("Lỗi Đăng Ký", "Vui lòng nhập tên người dùng.");
+      toastShow (
+        'error',
+        'Lỗi Đăng Ký',
+        'Vui lòng nhập tên người dùng.'
+      )
       return false;
     }
     else if(!email.trim() ){
-      Alert.alert("Lỗi Đăng Ký", "Vui lòng nhập email.");
+      toastShow (
+        'error',
+        'Lỗi Đăng Ký',
+        'Vui lòng nhập email.'
+      )
       return false;
     }
     else if(!password.trim()){
-      Alert.alert("Lỗi Đăng Ký", "Vui lòng nhập mật khẩu.");
+      toastShow (
+        'error',
+        'Lỗi Đăng Ký',
+        'Vui lòng nhập mật khẩu.'
+      )
       return false;
     }
     return true;
@@ -55,14 +85,19 @@ const RegisterScreen = ({ navigation } : any) => {
       }; 
       // Lưu thông tin user mới vào Firestore với ID User là id từ Firebase Auth
       await setDoc(doc(db, 'Users', newUser.idUser!), newUser);
-    Alert.alert("Đăng ký thành công", "Chào mừng " + newUser.name);
+      toastShow (
+          'success',
+          'Đăng ký thành công!',
+          'Hãy tạo ra thêm nhiều công thức của bạn ️🎉!',
+        )
     console.log(newUser);
     } catch (error: any) {
-      let msg = error.message;
-      if (error.code === 'auth/weak-password' ) msg = "Mật khẩu phải dài hơn 6 kí tự!";
-      if (error.code === 'auth/email-already-in-use' ) msg = "Email này đã được sử dụng!";
-      if (error.code === 'auth/invalid-email') msg = "Email không hợp lệ!";
-      Alert.alert("Đăng ký thất bại", msg);
+      const friendlyMessage = getAuthErrorMessage(error.code);
+      toastShow (
+        'error',
+        'Đăng ký thất bại!',
+        friendlyMessage,
+      )
     }
   };  
 

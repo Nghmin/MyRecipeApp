@@ -68,6 +68,8 @@ const styles = StyleSheet.create({
     height: 45,
     alignItems: 'center',
     marginBottom: 10,
+    borderWidth:1,
+    borderColor: '#F97316',    
   },
   input: { flex: 1, color: 'white', marginLeft: 10},
   scrollContainer: {
@@ -82,12 +84,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: '#F97316',
     gap: 6,
   },
   activeChip: {
     backgroundColor: '#F97316',
-    borderColor: '#F97316',
+    borderColor: '#fff',
   },
   chipText: { color: '#f3f7feff', fontSize: 13, fontWeight: '500' },
   activeText: { color: '#fff', fontWeight: 'bold' },

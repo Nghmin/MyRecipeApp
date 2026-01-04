@@ -28,7 +28,7 @@ export default function MyPostsScreen({navigation}:any) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <ChevronLeft color="white" size={28} />
         </TouchableOpacity>
-        <Text style={styles.title}>Bài viết của tôi</Text>
+        <Text style={styles.title}>Bài đăng của tôi</Text>
         <View style={{ width: 28 }} /> 
       </View>
       

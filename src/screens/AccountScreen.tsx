@@ -195,6 +195,7 @@ const styles = StyleSheet.create({
     paddingTop: 10, 
     marginLeft:10 ,
     marginRight:10,
+    borderColor: '#F97316',
     backgroundColor: 'rgba(10, 6, 6, 0.38)',
   },
   avatarWrapper: {

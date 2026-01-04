@@ -1,9 +1,20 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image ,TouchableOpacity ,Alert , } from 'react-native';
+import { StyleSheet, Text, View, Image ,TouchableOpacity ,} from 'react-native';
 
 import { Star } from 'lucide-react-native';
 
+import Toast from 'react-native-toast-message';
+
 import { formatRelativeTime } from '../utils/dateUtils';
+import Config from 'react-native-config';
+
+const AVT_DEFAULT = Config.AVT_DEFAULT!;
+
+interface MenuProps {
+  onEdit?: (() => void) | null;
+  onDelete?: (() => void) | null;
+}
+
 
 
 interface CommentProps {
@@ -37,54 +48,39 @@ const renderStars = (rating: number) => {
     );
 };
 
-  
+const toastShow = async ( type: string,title : string,text: string , props?: MenuProps) => {
+    Toast.show({
+        type: type,       
+        text1: title ,
+        text2: text,
+        position: 'top',    
+        autoHide: false,
+        props: props 
+    });
+}
 
 
 export const CommentItem = ({ comment , isMine, isPostOwner, onDelete , onEdit }: CommentProps) => {
     
     const handleLongPress = () => {
-        const options = [];
-        if (isMine || isPostOwner){ 
-            options.push({ 
-                text: "Xóa bình luận", 
-                style: "destructive" as const, 
-                onPress: () => onDelete?.(comment.id) 
-            });
-        }
-        if (isMine) {
-            options.push({ 
-                text: "Sửa bình luận", 
-                onPress: () => onEdit?.(comment) 
-            });
-        }
-        if (options.length > 0) {
-            options.push({ 
-                text: "Hủy", 
-                style: "cancel" as const,
-            });
-            Alert.alert("Quản lý bình luận", "Chọn thao tác bạn muốn thực hiện", options);
-        }
-    };
+        if (!isMine && !isPostOwner) return;
+        toastShow(
+            'optionMenu',
+            'Quản lý bình luận',
+            'Chọn thao tác bạn muốn thực hiện',
+            {
+                onEdit: isMine ? () => onEdit?.(comment) : null,
+                onDelete: (isMine || isPostOwner) ? () => onDelete?.(comment.id) : null,
+            }
+        );
 
-    // const handleDeleteComment = async (commentId: string) => {
-    //     try {
-    //         const commentRef = doc(db, "CommunityPosts", selectedPost.id, "Comments", commentId);
-    //         await deleteDoc(commentRef);
-    //         const postRef = doc(db, "CommunityPosts", selectedPost.id);
-    //         await updateDoc(postRef, {
-    //         commentsCount: increment(-1)
-    //         });
-            
-    //     } catch (error) {
-    //         console.log("Lỗi khi xóa bình luận:", error);
-    //     }
-    // };
+    };
 
     return (
         <TouchableOpacity onLongPress={handleLongPress} delayLongPress={500} activeOpacity={0.7}>
         <View style={styles.commentRow}>
             <Image 
-            source={{ uri: comment.userAvatar || 'https://via.placeholder.com/150' }} 
+            source={{ uri: comment.userAvatar || AVT_DEFAULT }} 
             style={styles.miniAvatar} 
             />
             <View style={styles.commentBody}>

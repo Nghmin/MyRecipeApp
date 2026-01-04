@@ -1,25 +1,54 @@
 import React ,{useState} from 'react';
 import { 
   StyleSheet, Text, View, TextInput, TouchableOpacity, 
-  KeyboardAvoidingView, Platform, ScrollView, Alert 
+  KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { auth } from '../config/firebaseConfig';
+import { getAuthErrorMessage } from '../config/authErrors';
+
 import { signInWithEmailAndPassword } from 'firebase/auth';
+
 
 const LoginScreen = ({ navigation} : any) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const toastShow = async ( type: string,title : string,text: string ) => {
+      Toast.show({
+            type: type,       
+            text1: title ,
+            text2: text,
+            position: 'top',    
+            topOffset: 60,
+            visibilityTime: 2500,
+      });
+    }
+
     const handleLogin = async () => {
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        // navigation.navigate('TabView');
+      if (!email || !password) {
+        toastShow('error', 'Lỗi nhập liệu', 'Vui lòng điền đầy đủ email và mật khẩu');
+        return;
+      }
+      try {
+          await signInWithEmailAndPassword(auth, email, password);
+          toastShow(
+            'success',
+            'Đăng nhập thành công!',
+            'Chào mừng nhà công thức tài ba👋',
+          )
+      }
+      catch (error: any) {
+        const friendlyMessage = getAuthErrorMessage(error.code);
+          toastShow(
+            'error',
+            'Đăng nhập thất bại!',
+            friendlyMessage,
+          )
+      }
     }
-    catch (error: any) {
-        Alert.alert("Đăng nhập thất bại", error.message);
-    }
-}
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 

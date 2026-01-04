@@ -1,7 +1,7 @@
 import React, { useState, useEffect ,useRef } from 'react';
 import { 
   View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, 
-  FlatList, Image, Alert
+  FlatList, Image
 } from 'react-native';
 import { Users, Plus, Heart, Bookmark, Star,MessageCircle , Trash2 , ChevronUp ,SearchX
  } from 'lucide-react-native';
@@ -22,6 +22,8 @@ import {FilterBar} from './FilterBar';
 import { FavoriteService } from '../services/favoriteService'
 
 import { formatRelativeTime } from '../utils/dateUtils';
+
+import Toast from 'react-native-toast-message';
 
 const AVT_DEFAULT = Config.AVATAR_DEFAULT ;
 
@@ -94,6 +96,27 @@ export function CommunityFeed({ onOpenShareModal ,mode = 'all',onPressDetailPost
     return () => unsubscribe?.();
   }, [mode]);
 
+  const toastShow = async ( type: string,title : string,text: string ) => {
+      Toast.show({
+          type: type,       
+          text1: title ,
+          text2: text,
+          position: 'top',    
+          topOffset: 60,
+          visibilityTime: 3000,
+      });
+  }
+  const toastConfirmShow = async ( type: string,title : string,text: string , props?: any) => {
+      Toast.show({
+          type: type,       
+          text1: title ,
+          text2: text,
+          position: 'top',    
+          autoHide: false,
+          props: props 
+      });
+  }
+
   const handleScroll = (event: any) => {
     const offsetY = event.nativeEvent.contentOffset.y;
     setShowBackToTop(offsetY > 500);
@@ -137,24 +160,36 @@ export function CommunityFeed({ onOpenShareModal ,mode = 'all',onPressDetailPost
         setFavoriteIds(prev => prev.filter(id => id !== post.postId));
       }
     } catch (error) {
-      Alert.alert("Lỗi", "Không thể cập nhật danh sách yêu thích");
+      toastShow(
+            'error',
+            'Lỗi!',
+            'Không thể cập nhật danh sách yêu thích.',
+      )
       console.log(error)
     }
   };
 
   const handleDeletePost = async (postId: string) => {
-    Alert.alert("Xác nhận","Bạn có muốn xóa bài đăng này không.", [
-      { text: "Hủy", style: "cancel" },
-      { 
-        text: "Xóa", 
-        style: "destructive", 
-        onPress: async () => {
+    toastConfirmShow(
+      'confirm',              
+      'Xác nhận xóa bài?',
+      'Bài đăng này sẽ bị xóa vĩnh viễn khỏi cộng đồng.',
+      {
+        onConfirm: async () => {
           try {
             await deleteDoc(doc(db, "CommunityPosts", postId));
-          } catch (e) { console.log(e) }
-        } 
+            toastShow(
+              'success',
+              'Thành công!',
+              'Bạn đã xóa bài viết khỏi cộng đồng',
+            )
+          } catch (e) { 
+            console.log(e);
+            toastShow('error', 'Lỗi', 'Không thể xóa bài đăng lúc này.');
+          }
+        }
       }
-    ]);
+    );
   };
 
   const filteredPosts = posts.filter(post => {
@@ -338,9 +373,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center',
-    padding : 8,
+    padding : 5,
     backgroundColor: 'rgba(45, 48, 49, 0.88)', 
     borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#F97316',
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
@@ -380,13 +417,13 @@ const cardStyles = StyleSheet.create({
     borderRadius: 20, 
     marginBottom: 20,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)'
+    borderWidth: 2,
+    borderColor: '#F97316',
   },
   
   userInfo: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 10 },
   deleteBnt: {position: 'absolute',right: 15},
-  avatar: { width: 35, height: 35, borderRadius: 17.5 },
+  avatar: { width: 35, height: 35, borderRadius: 17.5 , },
   userName: { color: 'white', fontWeight: '600' },
   ratingContainer:{
     flexDirection: 'row',
