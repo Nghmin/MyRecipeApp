@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { 
-  StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, ImageBackground,SafeAreaView
+  StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, ImageBackground
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import LinearGradient from 'react-native-linear-gradient';
 import { 

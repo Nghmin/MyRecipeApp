@@ -1,104 +1,120 @@
-import React ,{useState} from 'react';
-import { 
-  StyleSheet, Text, View, TextInput, TouchableOpacity, 
-  KeyboardAvoidingView, Platform, ScrollView,
+import React, { useState } from 'react';
+import {
+  StyleSheet, Text, View, TextInput, TouchableOpacity,
+  KeyboardAvoidingView, Platform, ScrollView, Dimensions
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Mail, Lock, ArrowRight } from 'lucide-react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 import { auth } from '../config/firebaseConfig';
 import { getAuthErrorMessage } from '../config/authErrors';
-
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
+const { width } = Dimensions.get('window');
 
-const LoginScreen = ({ navigation} : any) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+const LoginScreen = ({ navigation }: any) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-    const toastShow = async ( type: string,title : string,text: string ) => {
-      Toast.show({
-            type: type,       
-            text1: title ,
-            text2: text,
-            position: 'top',    
-            topOffset: 60,
-            visibilityTime: 2500,
-      });
+  const toastShow = (type: string, title: string, text: string) => {
+    Toast.show({
+      type: type,
+      text1: title,
+      text2: text,
+      position: 'top',
+      topOffset: 60,
+      visibilityTime: 3000,
+    });
+  }
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      toastShow('error', 'Lỗi nhập liệu', 'Vui lòng điền đầy đủ thông tin');
+      return;
     }
-
-    const handleLogin = async () => {
-      if (!email || !password) {
-        toastShow('error', 'Lỗi nhập liệu', 'Vui lòng điền đầy đủ email và mật khẩu');
-        return;
-      }
-      try {
-          await signInWithEmailAndPassword(auth, email, password);
-          toastShow(
-            'success',
-            'Đăng nhập thành công!',
-            'Chào mừng nhà công thức tài ba👋',
-          )
-      }
-      catch (error: any) {
-        const friendlyMessage = getAuthErrorMessage(error.code);
-          toastShow(
-            'error',
-            'Đăng nhập thất bại!',
-            friendlyMessage,
-          )
-      }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toastShow('success', 'Thành công', 'Chào mừng nhà công thức tài ba👋');
+    } catch (error: any) {
+      toastShow('error', 'Đăng nhập thất bại', getAuthErrorMessage(error.code));
     }
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
+      {/* Hình trang trí phía sau */}
+      <View style={styles.circleDecor} />
+      
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Chào mừng bạn!</Text>
-            <Text style={styles.subtitle}>Đăng nhập để tiếp tục hành trình cùng chúng tôi.</Text>
+            <Text style={styles.title}>Chào mừng bạn ✨{"\n"}nhà công thức tài ba!</Text>
+            <Text style={styles.subtitle}>Hãy cùng khám phá những công thức nấu ăn mới lạ ngay thôi.</Text>
           </View>
 
           {/* Form */}
           <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <TextInput 
-                placeholder="Email của bạn" 
-                style={styles.input}
-                placeholderTextColor="#999"
-                value={email}
-                onChangeText={setEmail}
-              />
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <View style={styles.inputWrapper}>
+                <Mail size={20} color="#94A3B8" style={styles.inputIcon} />
+                <TextInput
+                  placeholder="name@example.com"
+                  style={styles.input}
+                  placeholderTextColor="#94A3B8"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                />
+              </View>
             </View>
 
-            <View style={styles.inputContainer}>
-              <TextInput 
-                placeholder="Mật khẩu" 
-                secureTextEntry
-                style={styles.input}
-                placeholderTextColor="#999"
-                value={password}
-                onChangeText={setPassword}
-              />
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Mật khẩu</Text>
+              <View style={styles.inputWrapper}>
+                <Lock size={20} color="#94A3B8" style={styles.inputIcon} />
+                <TextInput
+                  placeholder="••••••••"
+                  secureTextEntry
+                  style={styles.input}
+                  placeholderTextColor="#94A3B8"
+                  value={password}
+                  onChangeText={setPassword}
+                />
+              </View>
             </View>
 
             <TouchableOpacity style={styles.forgotBtn}>
               <Text style={styles.forgotText}>Quên mật khẩu?</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} >
-              <Text style={styles.loginBtnText}>Đăng nhập</Text>
+            <TouchableOpacity activeOpacity={0.8} onPress={handleLogin}>
+              <LinearGradient
+                colors={['#2e24edc9', '#F97316']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.loginBtn}
+              >
+                <Text style={styles.loginBtnText}>Đăng nhập</Text>
+                <ArrowRight size={20} color="#FFF" />
+              </LinearGradient>
             </TouchableOpacity>
           </View>
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Chưa có tài khoản? </Text>
+            <Text style={styles.footerText}>Bạn là người mới? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.signUpText}>Đăng ký ngay</Text>
+              <Text style={styles.signUpText}>Tạo tài khoản</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -108,39 +124,61 @@ const LoginScreen = ({ navigation} : any) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  scrollContent: { flexGrow: 1, paddingHorizontal: 24, justifyContent: 'center' },
+  container: { flex: 1, backgroundColor: '#F8FAFC' },
+  circleDecor: {
+    position: 'absolute',
+    top: -width * 0.2,
+    right: -width * 0.2,
+    width: width * 0.8,
+    height: width * 0.8,
+    borderRadius: width * 0.4,
+    backgroundColor: '#fdf7ecff',
+    zIndex: -1,
+  },
+  scrollContent: { flexGrow: 1, paddingHorizontal: 28, justifyContent: 'center', paddingBottom: 20 },
   header: { marginBottom: 40 },
-  title: { fontSize: 32, fontWeight: '800', color: '#1A1A1A', marginBottom: 10 },
-  subtitle: { fontSize: 16, color: '#666', lineHeight: 24 },
+  title: { fontSize: 36, fontWeight: '800', color: '#F97316', lineHeight: 44 },
+  subtitle: { fontSize: 16, color: '#F97316', marginTop: 12, lineHeight: 24 },
   form: { marginBottom: 30 },
-  inputContainer: { 
-    backgroundColor: '#F5F6FA', 
-    borderRadius: 16, 
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    height: 60,
-    justifyContent: 'center',
-  },
-  input: { fontSize: 16, color: '#1A1A1A' },
-  forgotBtn: { alignSelf: 'flex-end', marginBottom: 30 },
-  forgotText: { color: '#4F46E5', fontWeight: '600' },
-  loginBtn: { 
-    backgroundColor: '#4F46E5', 
-    borderRadius: 16, 
-    height: 60, 
-    justifyContent: 'center', 
+  inputGroup: { marginBottom: 20 },
+  inputLabel: { fontSize: 14, fontWeight: '700', color: '#475569', marginBottom: 8, marginLeft: 4 },
+  inputWrapper: {
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#4F46E5',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    height: 64,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  loginBtnText: { color: '#FFF', fontSize: 18, fontWeight: '700' },
-  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 20 },
-  footerText: { color: '#666' },
-  signUpText: { color: '#4F46E5', fontWeight: '700' },
+  inputIcon: { marginRight: 12 },
+  input: { flex: 1, fontSize: 16, color: '#1E293B', fontWeight: '500' },
+  forgotBtn: { alignSelf: 'flex-end', marginBottom: 32 },
+  forgotText: { color: '#F97316', fontWeight: '700', fontSize: 14 },
+  loginBtn: {
+    flexDirection: 'row',
+    height: 64,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 10,
+  },
+  loginBtnText: { color: '#FFF', fontSize: 18, fontWeight: '800' },
+  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 10 },
+  footerText: { color: '#64748B', fontSize: 15 },
+  signUpText: { color: '#F97316', fontWeight: '800', fontSize: 15 },
 });
 
 export default LoginScreen;

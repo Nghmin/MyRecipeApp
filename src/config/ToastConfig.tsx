@@ -21,7 +21,6 @@ export const toastConfig = {
 
   confirm: ({ text1, text2, props }: any) => (
     <View style={styles.confirmBox}>
-      {/* Icon cảnh báo mảnh mai hơn */}
       <View style={styles.confirmIconCircle}>
         <Icon name="chat-question" size={32} color="#F97316" />
       </View>
@@ -57,7 +56,7 @@ export const toastConfig = {
       {text2 && <Text style={styles.menuMessage}>{text2}</Text>}
 
       <View style={styles.buttonStack}>
-        {/* Nút Sửa */}
+       
         {props.onEdit && (
           <TouchableOpacity 
             style={[styles.menuBtn, styles.editBtn]} 
@@ -68,7 +67,6 @@ export const toastConfig = {
           </TouchableOpacity>
         )}
 
-        {/* Nút Xóa */}
         {props.onDelete && (
           <TouchableOpacity 
             style={[styles.menuBtn, styles.deleteBtn]} 
@@ -79,7 +77,6 @@ export const toastConfig = {
           </TouchableOpacity>
         )}
 
-        {/* Nút Hủy */}
         <TouchableOpacity style={styles.cancelBtn} onPress={() => Toast.hide()}>
           <Text style={styles.cancelBtnText}>Hủy bỏ</Text>
         </TouchableOpacity>

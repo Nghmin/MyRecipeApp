@@ -156,9 +156,20 @@ export function CommunityFeed({ onOpenShareModal ,mode = 'all',onPressDetailPost
       const result = await FavoriteService.toggleFavorite(post, isSaved);
       if (result) {
         setFavoriteIds(prev => [...prev, post.postId]);
+        toastShow(
+            'success',
+            'Thành công!',
+            'Bạn đã thêm bài đăng vào danh sách yêu thích.',
+        )
       } else {
         setFavoriteIds(prev => prev.filter(id => id !== post.postId));
+        toastShow(
+            'success',
+            'Thành công!',
+            'Bạn đã xóa bài đăng trong danh sách yêu thích.',
+        )
       }
+      
     } catch (error) {
       toastShow(
             'error',

@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity , ImageBackground } from 'react-native';
+import { View, Text, StyleSheet,TouchableOpacity , ImageBackground } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 
 import { CommunityFeed } from '../components/CommunityFeed';
 import { RecipeDetailModal } from '../components/RecipeDetailModal';
 
 import {Recipe} from '../models/Recipe';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 const HomeBackground = require('../assets/themeHome.jpg');
 export default function MyPostsScreen({navigation}:any) {
     const [selectedRecipe, setSelectedRecipe] = React.useState<Recipe | null>(null);
