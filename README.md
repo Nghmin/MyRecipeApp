@@ -3,12 +3,15 @@ MyRecipeApp là ứng dụng di động giúp người dùng khám phá, chia s�
 
 ## Giao diện chính
 - Home: Hiển thị hồ sơ cá nhân rút gọn và ba phần giao diện nhỏ gồm trang cộng đồng , yêu thích và gợi ý món ăn.
+
 ![alt text](src/assets/home.png)
 
 - My Recipe: Thiết kế dạng Card/Grid dễ nhìn, giúp người dùng quản lý các món ăn tự sáng tạo một cách khoa học và đẹp mắt.
+
 ![alt text](src/assets/myRecipe.png)
 
 - Account : Bao gồm Avatar, thống kê nhỏ của bản thân , các tiện ích nhỏ khác nhau bên dưới như thay đổi thông tin người người dùng ,... và nút đăng xuất tài khoản.
+
 ![alt text](src/assets/account.png)
 
 ## Tính năng chính
