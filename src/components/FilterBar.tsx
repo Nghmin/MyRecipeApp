@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet,ScrollView } from 'react-native';
-import {Search, Heart, MessageCircle, Star, Clock } from 'lucide-react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
+import { Search, Heart, MessageCircle, Star, Clock } from 'lucide-react-native';
 
+import { useTheme } from '../theme/ThemeContext';
 interface FilterBarProps {
   searchQuery: string;
   setSearchQuery: (text: string) => void;
@@ -9,18 +10,20 @@ interface FilterBarProps {
   onFilterChange: (filter: any) => void;
 }
 
-export const FilterBar = ({ searchQuery, setSearchQuery,activeFilter ,onFilterChange  }: FilterBarProps) => {
-    const filters = [
-        { id: 'newest', label: 'Mới nhất', icon: <Clock size={16} color={activeFilter === 'newest' ? '#2e2b2bff' : '#F97316'} /> },
-        { id: 'likes', label: 'Yêu thích nhất', icon: <Heart size={16} color={activeFilter === 'likes' ? '#fff' : '#EF4444'} /> },
-        { id: 'comments', label: 'Bình luận nhiều', icon: <MessageCircle size={16} color={activeFilter === 'comments' ? '#fff' : '#10B981'} /> },
-        { id: 'rating', label: 'Đánh giá cao', icon: <Star size={16} color={activeFilter === 'rating' ? '#fff' : '#FBBF24'} /> },
-    ];
-    
-    return (
+export const FilterBar = ({ searchQuery, setSearchQuery, activeFilter, onFilterChange }: FilterBarProps) => {
+
+  const { currentTheme } = useTheme();
+  const filters = [
+    { id: 'newest', label: 'Mới nhất', icon: <Clock size={16} color={activeFilter === 'newest' ? '#FFF' : '#F97316'} /> },
+    { id: 'likes', label: 'Yêu thích nhất', icon: <Heart size={16} color={activeFilter === 'likes' ? '#FFF' : '#EF4444'} /> },
+    { id: 'comments', label: 'Bình luận nhiều', icon: <MessageCircle size={16} color={activeFilter === 'comments' ? '#FFF' : '#10B981'} /> },
+    { id: 'rating', label: 'Đánh giá cao', icon: <Star size={16} color={activeFilter === 'rating' ? '#FFF' : '#FBBF24'} /> },
+  ];
+
+  return (
     <View style={styles.container}>
       {/* Thanh tìm kiếm */}
-      <View style={styles.searchBox}>
+      <View style={[styles.searchBox, { borderColor: currentTheme.primary }]}>
         <Search size={18} color="#9CA3AF" />
         <TextInput
           style={styles.input}
@@ -32,17 +35,17 @@ export const FilterBar = ({ searchQuery, setSearchQuery,activeFilter ,onFilterCh
       </View>
 
       {/* Nút lọc thời gian */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
         {filters.map((item) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             key={item.id}
             style={[
-              styles.filterChip, 
-              activeFilter === item.id && styles.activeChip
+              [styles.filterChip, { borderColor: currentTheme.primary }],
+              activeFilter === item.id && [styles.activeChip, { backgroundColor: currentTheme.primary }]
             ]}
             onPress={() => onFilterChange(item.id)}
           >
@@ -63,18 +66,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'rgba(22, 11, 11, 0.54)',
     borderRadius: 15,
-    marginHorizontal: 15,
+    marginHorizontal: 5,
     paddingHorizontal: 15,
     height: 45,
     alignItems: 'center',
     marginBottom: 10,
-    borderWidth:1,
-    borderColor: '#F97316',    
+    borderWidth: 2,
+    //borderColor: '#F97316',
   },
-  input: { flex: 1, color: 'white', marginLeft: 10},
+  input: { flex: 1, color: 'white', marginLeft: 10 },
   scrollContainer: {
-    paddingHorizontal:5 ,
-    gap: 10, 
+    paddingHorizontal: 5,
+    gap: 10,
   },
   filterChip: {
     flexDirection: 'row',
@@ -83,13 +86,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#F97316',
+    borderWidth: 2,
+    //borderColor: '#F97316',
     gap: 6,
   },
   activeChip: {
-    backgroundColor: '#F97316',
+    //backgroundColor: '#F97316',
     borderColor: '#fff',
+    borderWidth: 1,
   },
   chipText: { color: '#f3f7feff', fontSize: 13, fontWeight: '500' },
   activeText: { color: '#fff', fontWeight: 'bold' },

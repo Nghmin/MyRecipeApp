@@ -6,11 +6,13 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { Clock} from 'lucide-react-native';
+import { Clock, Sparkles } from 'lucide-react-native';
 import IconMaterial from 'react-native-vector-icons/MaterialCommunityIcons';
+import LinearGradient from 'react-native-linear-gradient';
 import { Recipe } from '../models/Recipe';
-
 import { formatRelativeTime } from '../utils/dateUtils';
+
+import {useTheme} from '../theme/ThemeContext';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -18,128 +20,217 @@ interface RecipeCardProps {
   onDelete?: () => void;
   onEdit?: () => void;
   isMine?: boolean;
+  isAIGenerated?: boolean;
   onToggleFavorite?: () => void;
   showFavoriteBtn?: boolean;
 }
 
-export const RecipeCard = React.memo(({ recipe, onPress, onDelete, onEdit ,isMine = false,onToggleFavorite,showFavoriteBtn = false}: RecipeCardProps) => {
+export const RecipeCard = React.memo(({
+    recipe,
+    onPress,
+    onDelete,
+    onEdit,
+    isMine = false,
+    isAIGenerated = false,
+    onToggleFavorite,
+    showFavoriteBtn = false
+}: RecipeCardProps) => {
+  const { currentTheme } = useTheme();
   return (
-    <View style={styles.card}>
-      <TouchableOpacity
-        onLongPress={onDelete}
-        delayLongPress={500}
-        onPress={onPress}
-        activeOpacity={0.9}
+    <TouchableOpacity
+      style={styles.container}
+      onLongPress={onDelete}
+      delayLongPress={800}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.04)']}
+        style={[styles.card, { borderColor: currentTheme.primary }]}
       >
-        {/*Ảnh món*/}
-        <Image 
-          source={{ uri: recipe.image || 'https://via.placeholder.com/400' }} 
-          style={styles.cardImage} 
-        />
+        {/* Ảnh món với viền mờ */}
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: recipe.image || 'https://via.placeholder.com/400' }}
+            style={styles.cardImage}
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.6)']}
+            style={[styles.imageOverlay, { borderColor: currentTheme.primary }]}
+          />
 
-        {/*Đánh giá*/}
-        <View style={styles.timingBadge}>
-          <Text style={{ color: '#9CA3AF', fontSize: 11 }}>
-                    {formatRelativeTime(recipe.createdAtRecipe)}
-          </Text>
+          {/* Thời gian đăng */}
+          {!isAIGenerated && (
+            <View style={styles.timingBadge}>
+              <Text style={styles.timingText}>
+                {formatRelativeTime(recipe.createdAtRecipe || new Date())}
+              </Text>
+            </View>
+          )}
         </View>
         
-        {/*Tên và thời gian làm */}
+        {/* Thông tin món ăn */}
         <View style={styles.cardInfo}>
           <Text style={styles.recipeName} numberOfLines={1}>{recipe.name}</Text>
-          <View style={styles.metaInfo}>
-            <Clock size={12} color="#F97316" />
-            <Text style={styles.metaText}>{recipe.prepTime} phút</Text>
+
+          <View style={styles.metaRow}>
+            <View style={styles.metaItem}>
+              <Clock size={12} color= {currentTheme.primary} />
+              {!isAIGenerated ?
+                (<Text style={styles.metaText}>{recipe.prepTime || '20'} phút</Text>)
+                :
+                (<Text style={styles.metaText}>{recipe.cookTime}</Text>)
+              }
+            </View>
+            <View style={[styles.metaItem, { marginLeft: 10 }]}>
+              <IconMaterial name="signal" size={12} color={currentTheme.primary} />
+              <Text style={styles.metaText}>{recipe.difficulty || 'Dễ'}</Text>
+            </View>
           </View>
         </View>
-      </TouchableOpacity>
-      {isMine && (<>
-        <TouchableOpacity 
-            style={styles.editBtn}
+
+        {/* Badge AI */}
+        {isAIGenerated && (
+          <View style={[styles.aiBadge, { backgroundColor: currentTheme.primary }]}>         
+            <Sparkles size={10} color="#FFF" />
+            <Text style={styles.aiBadgeText}>AI CHEF</Text>
+          </View>
+        )}
+
+        {/* Nút chỉnh sửa */}
+        {isMine && (
+          <TouchableOpacity 
+            style={[styles.editBtn , { backgroundColor: currentTheme.primary, borderColor: currentTheme.primary } ]}
             onPress={onEdit}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <IconMaterial name='book-edit' size={18} color="#511b1bff" />
-        </TouchableOpacity>
-        </>)}
+          >
+            <IconMaterial name='pencil' size={16} color="#FFF" />
+          </TouchableOpacity>
+        )}
+
+        {/* Nút yêu thích */}
         {showFavoriteBtn && (
-            <TouchableOpacity 
-                style={styles.favouriteBtn}
-                onPress={onToggleFavorite}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-                <IconMaterial 
-                name={recipe.isFavorite ? 'heart' : 'heart-outline'} 
-                size={24} 
-                color={recipe.isFavorite ? "#f51818" : '#f0f0f1ff'} 
-                />
-            </TouchableOpacity>
-            )}
-    </View>
+          <TouchableOpacity
+            style={styles.favBtn}
+            onPress={onToggleFavorite}
+          >
+            <IconMaterial
+              name={recipe.isFavorite ? 'heart' : 'heart-outline'}
+              size={20}
+              color={recipe.isFavorite ? "#EF4444" : '#FFF'}
+            />
+          </TouchableOpacity>
+        )}
+      </LinearGradient>
+    </TouchableOpacity>
   );
 });
 
 const styles = StyleSheet.create({
+  container: {
+    width: '48%',
+    marginBottom: 16,
+  },
   card: {
-    backgroundColor: '#FFF',
-    borderRadius: 15,
-    width: '48%', 
-    marginBottom: 15,
-    elevation: 4,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor:  'rgba(255, 140, 0, 0.4)',
+    overflow: 'hidden',
+    backgroundColor:'rgba(15, 23, 42, 0.85)',
+    elevation: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    overflow: 'hidden', 
-    borderWidth:1,
-    borderColor :'#F97316',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+  },
+  imageContainer: {
+    width: '100%',
+    height: 130,
+    position: 'relative',
   },
   cardImage: {
     width: '100%',
-    height: 140,
+    height: '100%',
+  },
+  imageOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
   timingBadge: {
     position: 'absolute',
-    left: 0,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderTopRightRadius: 15,
-    borderTopLeftRadius:15,
-    borderBottomRightRadius: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  timingText: {
+    color: '#CBD5E1',
+    fontSize: 9,
+    fontWeight: '600',
   },
   cardInfo: {
-    padding: 10,
+    padding: 8,
   },
   recipeName: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 4,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 5,
   },
-  metaInfo: {
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
   metaText: {
-    fontSize: 11,
-    color: '#6B7280',
+    fontSize: 10,
+    color: '#94A3B8',
+  },
+  aiBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    gap: 4,
+    elevation: 4,
+  },
+  aiBadgeText: {
+    color: '#FFF',
+    fontSize: 9,
+    fontWeight: '900',
   },
   editBtn: {
     position: 'absolute',
-    bottom: 8,
+    //bottom: 55,
     right: 8,
-    backgroundColor: '#FFEDD5',
-    padding: 6,
-    borderRadius: 8,
+    backgroundColor:'#F97316',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
-  favouriteBtn: {
+  favBtn: {
     position: 'absolute',
-    padding: 3,
-    borderRadius: 8,
-    backgroundColor:'gray'
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

@@ -15,6 +15,8 @@ import { Recipe } from '../models/Recipe';
 
 import Config from "react-native-config";
 
+import { useTheme } from '../theme/ThemeContext';
+
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const AVT_DEFAULT = Config.AVATAR_DEFAULT ;
 
@@ -27,7 +29,7 @@ interface ShareRecipeModalProps {
 
 export function ShareRecipeModal({ isOpen, onClose, recipes, onShare }: ShareRecipeModalProps) {
   const [selectedRecipe, setSelectedRecipe] = useState<string | null>(null);
-
+  const { currentTheme } = useTheme();
   const handleShare = () => {
     if (selectedRecipe) {
       const recipeToShare = recipes.find(r => r.idRecipe === selectedRecipe);
@@ -81,7 +83,7 @@ export function ShareRecipeModal({ isOpen, onClose, recipes, onShare }: ShareRec
                   onPress={() => setSelectedRecipe(recipe.idRecipe)}
                   style={[
                     styles.recipeItem,
-                    selectedRecipe === recipe.idRecipe ? styles.selectedItem : styles.unselectedItem
+                    selectedRecipe === recipe.idRecipe ? [styles.selectedItem, { borderColor: currentTheme.primary }] : [styles.unselectedItem]
                   ]}
                 >
                   <Image 
@@ -96,7 +98,7 @@ export function ShareRecipeModal({ isOpen, onClose, recipes, onShare }: ShareRec
                   </View>
 
                   {selectedRecipe === recipe.idRecipe && (
-                    <View style={styles.checkBadge}>
+                    <View style={[styles.checkBadge, { backgroundColor: currentTheme.primary }]}>
                       <Check size={14} color="white" strokeWidth={3} />
                     </View>
                   )}
@@ -114,8 +116,8 @@ export function ShareRecipeModal({ isOpen, onClose, recipes, onShare }: ShareRec
               
               <TouchableOpacity 
                 style={[
-                  styles.shareBtn, 
-                  !selectedRecipe && styles.disabledBtn
+                  [styles.shareBtn, { backgroundColor: currentTheme.primary }],
+                  !selectedRecipe && [styles.disabledBtn]
                 ]} 
                 onPress={handleShare}
                 disabled={!selectedRecipe}
@@ -194,7 +196,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   selectedItem: {
-    borderColor: '#F97316',
+    //borderColor: '#F97316',
     backgroundColor: '#FFF7ED',
   },
   unselectedItem: {
@@ -222,7 +224,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   checkBadge: {
-    backgroundColor: '#F97316',
+    //backgroundColor: '#F97316',
     width: 24,
     height: 24,
     borderRadius: 12,
@@ -250,7 +252,7 @@ const styles = StyleSheet.create({
   },
   shareBtn: {
     flex: 1,
-    backgroundColor: '#F97316',
+    //backgroundColor: '#F97316',
     paddingVertical: 14,
     borderRadius: 16,
     alignItems: 'center',

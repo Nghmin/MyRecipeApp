@@ -11,7 +11,7 @@ import {
 import { Home, User, ChefHat } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-
+import { useTheme } from '../theme/ThemeContext';
 
 
 interface BottomNavProps {
@@ -29,7 +29,7 @@ function Snowflake({ delay, left }: { delay: number; left: string }) {
       Animated.sequence([
         Animated.delay(delay),
         Animated.timing(fallAnim, {
-          toValue: 120, 
+          toValue: 120,
           duration: 4000 + Math.random() * 2000,
           easing: Easing.linear,
           useNativeDriver: true,
@@ -70,7 +70,7 @@ function Snowflake({ delay, left }: { delay: number; left: string }) {
       style={[
         styles.snowflake,
         {
-          left: left as any, 
+          left: left as any,
           transform: [{ translateY: fallAnim }, { translateX: shakeAnim }],
         },
       ]}
@@ -82,6 +82,8 @@ function Snowflake({ delay, left }: { delay: number; left: string }) {
 
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
+  const { currentTheme } = useTheme();
+
   // Dữ liệu bông tuyết rơi
   const snowflakes = [
     { delay: 0, left: '10%' },
@@ -93,16 +95,16 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   ];
   // Định nghĩa các Tab
   const tabs = [
-    { id: 'Home', label: 'Trang chủ', icon: Home,  color: '#F97316' },
-    { id: 'My Recipe', label: 'Công thức', icon: ChefHat, color: '#F97316' },
-    { id: 'Account', label: 'Tài khoản', icon: User, color: '#F97316' },
+    { id: 'Home', label: 'Trang chủ', icon: Home, color: currentTheme.primary },
+    { id: 'My Recipe', label: 'Công thức', icon: ChefHat, color: currentTheme.primary },
+    { id: 'Account', label: 'Tài khoản', icon: User, color: currentTheme.primary },
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { borderColor: currentTheme.primary }]}>
       {/* Nền Gradient Giáng Sinh */}
       <LinearGradient
-        colors={['#E0F2F7', '#B2D8E5']} 
+        colors={['#E0F2F7', '#B2D8E5']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.gradientBg}
@@ -137,18 +139,18 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 style={[
                   styles.iconCircle,
                   { backgroundColor: isActive ? tab.color : 'rgba(245, 108, 3, 0.33)' },
-                  { borderColor: isActive ? 'white' : '#F97316'}
+                  { borderColor: isActive ? 'white' : tab.color }
                 ]}
               >
                 <IconComponent
                   size={25}
-                  color={isActive ? 'white' : '#F97316'}
+                  color={isActive ? 'white' : tab.color}
                   strokeWidth={2.5}
                 />
               </View>
 
               {/* Tên Tab */}
-              <Text style={[styles.label, { color: isActive ? '#fa9e15ff' : 'black' }]}>
+              <Text style={[styles.label, { color: isActive ? tab.color : 'black' }]}>
                 {isActive ? tab.label : `${tab.label}`}
               </Text>
             </TouchableOpacity>
@@ -165,11 +167,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 30 : 15,
     left: 8,
-    right: 8, 
-    height: 70, 
-    borderRadius: 15, 
+    right: 8,
+    height: 70,
+    borderRadius: 15,
     overflow: 'hidden',
-    
+
     elevation: 15,
 
     shadowColor: '#000',
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 12,
     borderWidth: 2,
-    borderColor: '#fa9e15ff',
+    //borderColor: '#fa9e15ff',
   },
   gradientBg: {
     ...StyleSheet.absoluteFillObject,
@@ -191,7 +193,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    height: '100%', 
+    height: '100%',
     paddingHorizontal: 10,
   },
   tabButton: {
@@ -202,25 +204,27 @@ const styles = StyleSheet.create({
   iconCircle: {
     padding: 8,
     borderRadius: 12,
-    borderWidth:1,
+    borderWidth: 2,
     
   },
   label: {
-    fontSize: 9, 
+    fontSize: 9,
     fontWeight: '800',
     marginTop: 1,
   },
   activeIndicator: {
     position: 'absolute',
-    top: -12, 
+    top: -12,
     alignItems: 'center',
+
   },
   activeLine: {
     width: 30,
     height: 2,
     borderRadius: 2,
+
   },
-  
+
   bottomBorder: {
     display: 'none',
   },

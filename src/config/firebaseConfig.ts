@@ -12,7 +12,6 @@ const firebaseConfig = {
   appId:Config.FIREBASE_APP_ID!,
   measurementId:Config.FIREBASE_MEASUREMENT_ID!
 };
-console.log("Firebase :",Config.FIREBASE_API_KEY);
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig); // Khởi tạo ứng dụng Firebase để sử dụng trong toàn bộ app
 //const analytics = getAnalytics(firebaseApp); // Analytics là tùy chọn, dùng để theo dõi và phân tích người dùng hoạt động trong app
