@@ -11,7 +11,7 @@ import Config from "react-native-config";
 import Toast from 'react-native-toast-message';
 
 
-import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
 
 import { RecipeDetailModal } from '../components/RecipeDetailModal';
 import { RecipeCard } from '../components/RecipeCard';
@@ -19,7 +19,6 @@ import { ShareRecipeModal } from '../components/ShareRecipeModal';
 import { CommunityFeed } from '../components/CommunityFeed';
 import AiComponentModal from '../components/AiModal';
 
-import { User } from '../models/User';
 import { Recipe } from '../models/Recipe';
 
 import IconMaterial from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -28,16 +27,18 @@ import LinearGradient from 'react-native-linear-gradient';
 import { FavoriteService } from '../services/favoriteService';
 
 import { useTheme } from '../theme/ThemeContext';
+import { useUser } from '../theme/UserContext';
 
 const AVT_DEFAULT = Config.AVT_DEFAULT!;
 const HomeBackground = require('../assets/themeHome.jpg');
 const HeaderHomeBackground = require('../assets/themeHeaderHome.jpg');
+
+// Biến toàn cục để quản lý timer thông báo like
 function HomeScreen({ navigation }: any) {
-    //const insets = useSafeAreaInsets();
-    const [userName, setUserName] = React.useState('...');
-    const [userAvatar, setUserAvatar] = React.useState(AVT_DEFAULT);
+    const { currentTheme } = useTheme();
+    const { userProfile } = useUser();
+
     const [apiRecipes, setApiRecipes] = React.useState<Recipe[]>([]);
-    //const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
     const [selectedRecipe, setSelectedRecipe] = React.useState<Recipe | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = React.useState(false);
@@ -51,32 +52,22 @@ function HomeScreen({ navigation }: any) {
     const [isAiModalVisible, setAiModalVisible] = React.useState(false);
     //const [userIngredients, setUserIngredients] = React.useState(''); 
 
-    const { currentTheme } = useTheme();
+    const userName = userProfile?.name || 'Người dùng';
+    const userAvatar = userProfile?.avatar || AVT_DEFAULT;
 
     useFocusEffect(
         React.useCallback(() => {
             const fetchData = async () => {
                 try {
-                    const currentUser = auth.currentUser;
-                    if (currentUser) {
-                        // ... code lấy user info ...
-                        const userDocRef = doc(db, "Users", currentUser.uid);
-                        const userDoc = await getDoc(userDocRef);
-                        if (userDoc.exists()) {
-                            const userData = userDoc.data() as User;
-                            setUserName(userData.name || 'Người dùng');
-                            const finalAvatar = userData.avatar && userData.avatar.trim() !== '' ? userData.avatar : AVT_DEFAULT;
-                            setUserAvatar(finalAvatar);
-                        }
-
+                    if (userProfile) {
                         // Lấy danh sách yêu thích
                         const favData = await FavoriteService.getFavorites();
                         setFavoriteRecipes(favData);
 
-                        // TỰ ĐỘNG TẢI LẠI CÁC MÓN AI ĐÃ LƯU
+                        // Tải danh sách món AI gợi ý của người dùng
                         const aiQuery = query(
                             collection(db, "Recipes"),
-                            where("idUser", "==", currentUser.uid),
+                            where("idUser", "==", userProfile.uid),
                             where("isAI", "==", true)
                         );
                         const aiSnapshot = await getDocs(aiQuery);
@@ -91,7 +82,7 @@ function HomeScreen({ navigation }: any) {
                 }
             };
             fetchData();
-        }, [])
+        }, [userProfile])
     );
 
     // Lấy danh sách món ăn cá nhân để chọn khi share
@@ -125,6 +116,7 @@ function HomeScreen({ navigation }: any) {
         });
     }
 
+    // Xử lý yêu thích 
     const handleToggleFavorite = async (item: any) => {
         const isFav = favoriteRecipes.some(fav => fav.postId === item.postId);
         try {
@@ -132,7 +124,7 @@ function HomeScreen({ navigation }: any) {
             if (result) {
                 setFavoriteRecipes(prev => [{ ...item, isFavorite: true }, ...prev]);
             } else {
-                setFavoriteRecipes(prev => prev.filter(fav => fav.postId !== item.postId));
+                setFavoriteRecipes(prev => prev.filter(fav => fav.postId !== item.postId));  
             }
         } catch (error) {
             console.log("Lỗi đồng bộ yêu thích tại Home:", error);
@@ -146,13 +138,12 @@ function HomeScreen({ navigation }: any) {
 
     const handleShareToCommunity = async (recipe: Recipe) => {
         try {
-            const user = auth.currentUser;
-            if (!user) return;
+            if (!userProfile) return;
 
             const checkQ = query(
                 collection(db, "CommunityPosts"),
                 where("idRecipe", "==", recipe.idRecipe),
-                where("idUser", "==", user.uid));
+                where("idUser", "==", userProfile.uid));
             const checkSnapshot = await getDocs(checkQ);
             if (!checkSnapshot.empty) {
                 toastShow(
@@ -165,7 +156,7 @@ function HomeScreen({ navigation }: any) {
 
             const postData = {
                 ...recipe,
-                idUser: user.uid,
+                idUser: userProfile.uid,
                 userName: userName,
                 userAvatar: userAvatar,
                 sharedAt: serverTimestamp(),
@@ -214,7 +205,6 @@ function HomeScreen({ navigation }: any) {
             }
         } catch (error) {
             console.log("Lỗi khi lưu món AI:", error);
-            // Nếu lỗi DB vẫn hiển thị tạm trên UI
             setApiRecipes(prev => [{ ...recipe, idRecipe: Date.now().toString() }, ...prev]);
         }
     };
@@ -288,7 +278,7 @@ function HomeScreen({ navigation }: any) {
                         style={[[styles.menuItem, { borderColor: currentTheme.primary }], activeTab === 'community' && [styles.menuBtn, { backgroundColor: currentTheme.primary }]]}
                         onPress={() => setActiveTab('community')}
                     >
-                        <Text style={styles.menuText}>Món cộng đồng</Text>
+                        <Text style={styles.menuText}>Cộng đồng</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity

@@ -7,6 +7,7 @@ import React ,{useState , useEffect} from 'react';
 import MyPostsScreen from '../../screens/MyPostScreen.tsx';
 import LoginScreen from '../../screens/LoginScreen.tsx';
 import RegisterScreen from '../../screens/RegisterScreen.tsx';
+import { NotificationScreen } from '../../screens/NotificationScreen.tsx';
 
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../config/firebaseConfig';
@@ -29,6 +30,7 @@ function MainStack() {
             {user? (<>
                 <stacks.Screen name="TabView" component={MainTabView}/>
                 <stacks.Screen name="MyPosts" component={MyPostsScreen}/>
+                <stacks.Screen name="Notifications" component={NotificationScreen}/>
                 {/* <stacks.Screen name="Home" component={HomeScreen} />
                 <stacks.Screen name="My Recipe" component={RecipeOfMySelfScreen}/>
                 <stacks.Screen name="Account" component={AccountScreen} /> */}

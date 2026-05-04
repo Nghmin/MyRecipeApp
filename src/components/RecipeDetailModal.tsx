@@ -13,7 +13,7 @@ import {
 import { ArrowLeft, Clock, ChefHat, Star } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { doc, deleteDoc } from 'firebase/firestore';
 
 import { Recipe } from '../models/Recipe';
 
@@ -25,10 +25,19 @@ import { toastConfig } from '../config/ToastConfig';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '../theme/ThemeContext';
+import { useUser } from '../theme/UserContext';
+import { NotificationService } from '../services/notificationService';
 
 import { collection, query, orderBy, onSnapshot, addDoc, increment, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 const AVT_DEFAULT = Config.AVT_DEFAULT!;
+
+const normalizeCategories = (cat: any): string[] => {
+  if (!cat) return [];
+  if (Array.isArray(cat)) return cat;
+  if (typeof cat === 'string') return cat.split(',').map((c: string) => c.trim()).filter((c: string) => c !== '');
+  return [];
+};
 
 interface RecipeDetailProps {
   isOpen: boolean;
@@ -44,6 +53,7 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
   const [inputComment, setInputComment] = useState('');
 
   const { currentTheme } = useTheme();
+  const { userProfile } = useUser();
 
   const updateGlobalPostRating = useCallback(async (list: any[]) => {
     if (!recipe?.postId) return;
@@ -160,25 +170,12 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
           'Đã cập nhật bình luận 🎉.',
         )
       } else {
-        let finalName = 'Người dùng';
-        let finalAvatar = AVT_DEFAULT;
-
-        // Lấy thông tin từ bảng Users
-        const userDocRef = doc(db, "Users", user.uid);
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (userDocSnap.exists()) {
-          const userData = userDocSnap.data();
-          finalName = userData.name || userData.userName || 'Người dùng';
-          finalAvatar = userData.avatar || userData.userAvatar || AVT_DEFAULT;
-        }
-
         const commentData = {
           rating: userRating || 0,
           content: inputComment.trim(),
           userId: user.uid,
-          userName: finalName,
-          userAvatar: finalAvatar,
+          userName: userProfile?.name || 'Người dùng',
+          userAvatar: userProfile?.avatar || AVT_DEFAULT,
           createdAt: serverTimestamp()
         };
 
@@ -186,6 +183,17 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
         await updateDoc(postRef, {
           commentsCount: increment(1)
         });
+
+        // Gửi thông báo cho chủ bài viết
+        if (recipe.idUser !== user.uid) {
+          await NotificationService.sendNotification(
+            recipe.idUser,
+            userProfile?.name || 'Người dùng',
+            userProfile?.avatar || AVT_DEFAULT,
+            'comment',
+            recipe.postId
+          );
+        }
       }
       setInputComment('');
       setUserRating(0);
@@ -262,6 +270,20 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
                 {recipe.description || 'Chưa có mô tả cho món ăn này.'}
               </Text>
             </View>
+
+            {/* Danh mục */}
+            {(normalizeCategories(recipe.category).length > 0) && (
+              <View style={styles.card}>
+                <Text style={styles.sectionTitle}>Danh mục</Text>
+                <View style={styles.categoriesContainer}>
+                  {normalizeCategories(recipe.category).map((category: any, index: number) => (
+                    <View key={index} style={[styles.categoryItem, { backgroundColor: currentTheme.primary + '20', borderColor: currentTheme.primary, borderWidth: 1 }]}>
+                      <Text style={[styles.categoryText, { color: currentTheme.primary, fontWeight: 'bold' }]}>{category}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
 
             {/* Nguyên liệu */}
             <View style={styles.card}>
@@ -461,6 +483,25 @@ const styles = StyleSheet.create({
     color: '#4B5563',
     lineHeight: 22
   },
+
+  categoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16
+  },
+  categoryItem: {
+    backgroundColor: '#E5E7EB',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 12
+  },
+  categoryText: {
+    fontSize: 13,
+    color: '#374151'
+  },
+
   ingredientItem: {
     flexDirection: 'row',
     alignItems: 'center',

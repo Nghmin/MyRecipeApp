@@ -75,25 +75,32 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
     setIsSubmitting(true);
     try {
       const userId = auth.currentUser?.uid;
-      if (!userId || !userData) return;
+      // userData.uid lấy từ UserContext, nếu không có thì dùng userId từ Auth
+      const targetId = userData?.uid || userId;
+
+      if (!targetId) {
+        toastShow('error', 'Lỗi', 'Không tìm thấy ID người dùng');
+        return;
+      }
 
       let finalAvatarUrl = avatarUri;
       const isNewImageSelected = avatarUri && (avatarUri.startsWith('file') || avatarUri.startsWith('content'));
 
       if (isNewImageSelected) {
-        const remoteUrl = await uploadImageToSupabase(avatarUri!, 'user-images', userId);
+        const remoteUrl = await uploadImageToSupabase(avatarUri!, 'user-images', targetId);
         if (remoteUrl) {
-          if (userData.avatar && userData.avatar.includes('supabase.co')) {
+          if (userData?.avatar && userData.avatar.includes('supabase.co')) {
             await deleteImageFromSupabase(userData.avatar);
           }
           finalAvatarUrl = remoteUrl;
         }
       }
-      const UserRef = doc(db, "Users", userData.idUser);
+      const UserRef = doc(db, "Users", targetId);
       const updatedData = {
         name: name,
         email: email,
         avatar: finalAvatarUrl, 
+        uid: targetId // Đảm bảo luôn có uid bên trong tài liệu
       };
 
       await updateDoc(UserRef, updatedData);

@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, ImageBackground, StatusBar
 } from 'react-native';
 
 import { useTheme } from '../theme/ThemeContext';
+import { useUser } from '../theme/UserContext';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,9 +13,7 @@ import {
   Heart, Settings, Bell, Info, LogOut, ChevronRight, Moon, Users
 } from 'lucide-react-native';
 import Animated, { FadeInUp, FadeInLeft } from 'react-native-reanimated';
-import { useFocusEffect } from '@react-navigation/native';
 
-import { User } from '../models/User';
 import { EditProfileModal } from '../components/EditProfileModal';
 import { ThemeSelectionModal} from '../components/ThemeSelectionModal';
 
@@ -22,12 +21,12 @@ import { auth, db } from '../config/firebaseConfig';
 import Config from "react-native-config";
 
 import { signOut } from 'firebase/auth';
-import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot,  } from 'firebase/firestore';
 
 const menuItems = [
   { icon: Users, label: 'Thông tin cá nhân', desc: 'Chỉnh sửa thông tin' },
   { icon: Heart, label: 'Bài đăng', desc: 'Lưu trữ bài đăng của bạn' },
-  { icon: Bell, label: 'Thông báo', desc: 'Cài đặt nhắc nhở' },
+  { icon: Bell, label: 'Thông báo', desc: 'Thông báo đến bạn' },
   { icon: Moon, label: 'Giao diện', desc: 'Chọn màu chủ đạo' },
   { icon: Settings, label: 'Cài đặt', desc: 'Tùy chỉnh ứng dụng' },
   { icon: Info, label: 'Trợ giúp', desc: 'Câu hỏi thường gặp' },
@@ -38,9 +37,9 @@ const AccountBackground = require('../assets/themeAccount.jpg');
 export default function AccountScreen({ navigation }: any) {
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const { currentTheme, setTheme } = useTheme();
+  const { userProfile } = useUser();
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   
-  const [userData, setUserData] = useState<User | null>(null);
   const [recipeCount, setRecipeCount] = useState(0);
   const [totalLikes, setTotalLikes] = useState(0);
   const [userPosts, setUserPosts] = useState([]);
@@ -83,27 +82,6 @@ export default function AccountScreen({ navigation }: any) {
     };
   }, []);
 
-  
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [])
-  );
-
-  const refreshData = async () => {
-    try {
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        const userDoc = await getDoc(doc(db, "Users", currentUser.uid));
-        if (userDoc.exists()) {
-          setUserData(userDoc.data() as User);
-        }
-      }
-    } catch (error) {
-      console.log("Lỗi khi refresh dữ liệu:", error);
-    }
-  };
-
   const handleThemeSelect = (theme: any) => {
     setTheme(theme);
   };
@@ -140,17 +118,17 @@ export default function AccountScreen({ navigation }: any) {
           <Animated.View entering={FadeInUp.delay(200)} style={styles.header}>
             <View style={[styles.avatarWrapper, { borderColor: currentTheme.primary }]}>
               <Image
-                key={userData?.avatar}
+                key={userProfile?.avatar}
                 source={{
-                  uri: (userData?.avatar && userData.avatar.trim() !== "")
-                    ? userData.avatar
+                  uri: (userProfile?.avatar && userProfile.avatar.trim() !== "")
+                    ? userProfile.avatar
                     : AVT_DEFAULT
                 }}
                 style={styles.avatar}
               />
             </View>
-            <Text style={styles.userName}>{userData?.name || "Đang tải..."}</Text>
-            <Text style={styles.userEmail}>{userData?.email || ""}</Text>
+            <Text style={styles.userName}>{userProfile?.name || "Đang tải..."}</Text>
+            <Text style={styles.userEmail}>{userProfile?.email || ""}</Text>
 
             {/* Thống kê người dùng với màu chủ đạo động */}
             <View style={styles.statsContainer}>
@@ -172,6 +150,8 @@ export default function AccountScreen({ navigation }: any) {
                     if (item.label === 'Thông tin cá nhân') setIsDetailModalOpen(true);
                     else if (item.label === 'Bài đăng') navigation.navigate('MyPosts');
                     else if (item.label === 'Giao diện') setIsThemeModalOpen(true);
+                    else if (item.label === 'Thông báo') navigation.navigate('Notifications');
+                  
                   }}>
                   {/* Icon Box thay đổi màu theo theme đã chọn */}
                   <LinearGradient 
@@ -202,8 +182,8 @@ export default function AccountScreen({ navigation }: any) {
         <EditProfileModal
           isOpen={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          userData={userData}
-          onUpdateSuccess={refreshData}
+          userData={userProfile as any}
+          onUpdateSuccess={() => {}}
         />
 
         {/* Modal tùy chọn giao diện màu sắc */}
@@ -228,21 +208,21 @@ const StatCard = ({ value, label, color }: { value: string, label: string, color
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  scrollContent: { paddingBottom: 100, paddingTop: 40 },
+  scrollContent: { paddingBottom: 100, paddingTop: 10 },
   header: {
-    alignItems: 'center', marginBottom: 30, borderWidth: 1, borderRadius: 24,
-    paddingBottom: 25, paddingTop: 20, marginHorizontal: 15,
+    alignItems: 'center', marginBottom: 20, borderWidth: 1, borderRadius: 24,
+    paddingBottom: 10, paddingTop: 10, marginHorizontal: 15,
     borderColor: 'rgba(255, 255, 255, 0.12)', backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   avatarWrapper: {
     width: 120, height: 120, borderRadius: 60,
-    borderWidth: 3, marginBottom: 15,
+    borderWidth: 3, marginBottom: 5,
     overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.05)',
   },
   avatar: { width: '100%', height: '100%' },
-  userName: { color: 'white', fontSize: 28, fontWeight: '800', letterSpacing: 0.5 },
-  userEmail: { color: 'rgba(255, 255, 255, 0.5)', fontSize: 14, marginTop: 4 },
-  statsContainer: { flexDirection: 'row', gap: 12, marginTop: 25, paddingHorizontal: 15 },
+  userName: { color: 'white', fontSize: 27, fontWeight: '600', letterSpacing: 0.5 },
+  userEmail: { color: 'rgba(255, 255, 255, 0.5)', fontSize: 15, marginTop: 2},
+  statsContainer: { flexDirection: 'row', gap: 12, marginTop: 10, paddingHorizontal: 15 },
   statCard: {
     flex: 1, backgroundColor: 'rgba(255,255,255,0.08)',
     paddingVertical: 15, borderRadius: 20,
@@ -258,7 +238,7 @@ const styles = StyleSheet.create({
   iconBox: { width: 46, height: 46, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
   menuText: { flex: 1, marginLeft: 15 },
   menuLabel: { color: 'white', fontSize: 16, fontWeight: '700' },
-  menuDesc: { color: 'rgba(255, 255, 255, 0.4)', fontSize: 12, marginTop: 2 },
+  menuDesc: { color: 'rgba(255, 255, 255, 0.4)', fontSize: 13, marginTop: 2 },
   logoutButton: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
     backgroundColor: 'rgba(239, 68, 68, 0.12)', padding: 18, borderRadius: 22,

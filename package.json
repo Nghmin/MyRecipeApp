@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "real-device": "npx react-native run-android --device R58N60BZWEX --active-arch-only",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",

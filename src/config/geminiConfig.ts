@@ -31,7 +31,6 @@ const genAI = new GoogleGenerativeAI(apiKey);
 //   }
 // };
 
-// Sử dụng alias "gemini-flash-latest" - đây là model có trong danh sách khả dụng của bạn
 export const aiModel = genAI.getGenerativeModel({
   model: "gemini-flash-latest",
   generationConfig: {

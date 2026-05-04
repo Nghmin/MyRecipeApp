@@ -156,7 +156,7 @@ export default function RecipeOfMySelfScreen() {
         <View style={styles.emptyContainer}>
           <ChefHat size={80} color="#FFEDD5" />
           <Text style={styles.emptyText}>Chưa có công thức nào.</Text>
-          <Text style={styles.emptySubText}>Bấm nút "+" để bắt đầu nấu nhé!</Text>
+          <Text style={styles.emptySubText}>Bấm nút "+" để lưu giữ công thức của riêng bạn!</Text>
         </View>
       );
     }
@@ -228,7 +228,7 @@ export default function RecipeOfMySelfScreen() {
               <Text style={styles.headerSubtitle}>Lưu giữ hương vị riêng của bạn</Text>
             </View>
             <TouchableOpacity
-              style={[styles.findingButtonHeader , { backgroundColor: currentTheme.primary, borderColor: currentTheme.primary } ]}
+              style={[styles.findingButtonHeader, { backgroundColor: currentTheme.primary, borderColor: currentTheme.primary }]}
               onPress={() => {
                 setIsSearchVisible(!isSearchVisible)
                 if (isSearchVisible) setSearchQuery('')
