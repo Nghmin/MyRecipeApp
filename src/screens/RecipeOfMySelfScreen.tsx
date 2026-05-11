@@ -55,10 +55,10 @@ export default function RecipeOfMySelfScreen() {
     );
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const recipesData: Recipe[] = [];
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach((d) => {
         recipesData.push({
-          ...doc.data(),
-          idRecipe: doc.id
+          ...d.data(),
+          idRecipe: d.id
         } as Recipe);
       });
       setRecipes(recipesData);

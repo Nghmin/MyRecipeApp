@@ -84,7 +84,7 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       setCommentsList(list);
       updateGlobalPostRating(list);
     });

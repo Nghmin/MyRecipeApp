@@ -37,16 +37,16 @@ export const FavoriteService = {
       const favRef = collection(db, "Users", user.uid, "Favorites");
       const querySnapshot = await getDocs(favRef);
      
-      const favIds = querySnapshot.docs.map(doc => doc.id);
+      const favIds = querySnapshot.docs.map(d => d.id);
       if (favIds.length === 0) return [];
 
       const postsRef = collection(db, "CommunityPosts");
       const q = query(postsRef, where("__name__", "in", favIds)); 
       const postsSnapshot = await getDocs(q);
 
-      return postsSnapshot.docs.map(doc => ({
-        ...doc.data(),
-        postId: doc.id,
+      return postsSnapshot.docs.map(d => ({
+        ...d.data(),
+        postId: d.id,
         isFavorite: true 
       }));
     } catch (error) {

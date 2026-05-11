@@ -42,9 +42,9 @@ export const NotificationScreen = ({ navigation }: any) => {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const list = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const list = snapshot.docs.map(d => ({
+        id: d.id,
+        ...d.data()
       }));
       setNotifications(list);
       setLoading(false);
