@@ -1,22 +1,22 @@
-import React, { useState , useEffect} from 'react';
-import { doc,updateDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { doc, updateDoc } from 'firebase/firestore';
 
-import { launchImageLibrary  } from 'react-native-image-picker';
-import { uploadImageToSupabase , deleteImageFromSupabase} from '../services/uploadService'; 
+import { launchImageLibrary } from 'react-native-image-picker';
+import { uploadImageToSupabase, deleteImageFromSupabase } from '../services/uploadService';
 
-import { X, Camera,Check } from 'lucide-react-native';
+import { X, Camera, Check } from 'lucide-react-native';
 
-import { auth , db} from '../config/firebaseConfig';
-import Config from "react-native-config"; 
-import {toastConfig} from '../config/ToastConfig';
+import { auth, db } from './config/firebaseConfig';
+import Config from "react-native-config";
+import { toastConfig } from './config/ToastConfig';
 
 import Toast from 'react-native-toast-message';
 
 import { User } from '../models/User';
 
-import { 
+import {
   Modal, View, Text, TextInput, TouchableOpacity,
-   StyleSheet, Platform, KeyboardAvoidingView , Image, ActivityIndicator ,
+  StyleSheet, Platform, KeyboardAvoidingView, Image, ActivityIndicator,
 } from 'react-native';
 
 interface EditUserModalProps {
@@ -33,7 +33,7 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
   const [avatarUri, setAvatarUri] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const AVT_DEFAULT = Config.AVATAR_DEFAULT ;;
+  const AVT_DEFAULT = Config.AVATAR_DEFAULT;;
 
   useEffect(() => {
     if (userData) {
@@ -51,24 +51,24 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
     });
   };
 
-  const toastShow = async ( type: string,title : string,text: string ) => {
-      Toast.show({
-          type: type,       
-          text1: title ,
-          text2: text,
-          position: 'top',    
-          topOffset: 60,
-          visibilityTime: 3000,
-      });
+  const toastShow = async (type: string, title: string, text: string) => {
+    Toast.show({
+      type: type,
+      text1: title,
+      text2: text,
+      position: 'top',
+      topOffset: 60,
+      visibilityTime: 3000,
+    });
   }
-  
+
 
   const handleSubmit = async () => {
     if (!name.trim() || !email.trim()) {
       toastShow(
-          'error',
-          'Lỗi!',
-          'Vui lòng điền đầy đủ các thông tin bắt buộc.',
+        'error',
+        'Lỗi!',
+        'Vui lòng điền đầy đủ các thông tin bắt buộc.',
       )
       return;
     }
@@ -99,25 +99,25 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
       const updatedData = {
         name: name,
         email: email,
-        avatar: finalAvatarUrl, 
+        avatar: finalAvatarUrl,
         uid: targetId // Đảm bảo luôn có uid bên trong tài liệu
       };
 
       await updateDoc(UserRef, updatedData);
       toastShow(
-          'success',
-          'Thành công!',
-          'Đã cập nhật hồ sơ.',
+        'success',
+        'Thành công!',
+        'Đã cập nhật hồ sơ.',
       )
-      
-      onUpdateSuccess(); 
+
+      onUpdateSuccess();
       onClose();
     } catch (error: any) {
       console.error(error);
       toastShow(
-          'error',
-          'Lỗi!',
-          'Không thể cập nhật hồ sơ.',
+        'error',
+        'Lỗi!',
+        'Không thể cập nhật hồ sơ.',
       )
     } finally {
       setIsSubmitting(false);
@@ -127,7 +127,7 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
   return (
     <Modal visible={isOpen} animationType="slide" transparent={true}>
       <View style={styles.overlay}>
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.container}
         >
@@ -141,9 +141,9 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
 
           <View style={styles.avatarSection}>
             <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
-              <Image 
-                source={{ uri: avatarUri || AVT_DEFAULT }} 
-                style={styles.avatar} 
+              <Image
+                source={{ uri: avatarUri || AVT_DEFAULT }}
+                style={styles.avatar}
               />
               <View style={styles.cameraIcon}>
                 <Camera color="#fff" size={18} />
@@ -156,11 +156,11 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
             <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nhập tên của bạn" />
 
             <Text style={styles.label}>Email</Text>
-            <TextInput 
-              style={styles.input} 
-              value={email} 
-              onChangeText={setEmail} 
-              placeholder="Nhập Email" 
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Nhập Email"
               keyboardType="email-address"
             />
           </View>

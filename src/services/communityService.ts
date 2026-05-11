@@ -6,7 +6,7 @@ import {
   getDocs, 
   serverTimestamp 
 } from 'firebase/firestore';
-import { db, auth } from '../config/firebaseConfig';
+import { db, auth } from '../components/config/firebaseConfig';
 import { Recipe } from '../models/Recipe';
 import { User } from '../models/User';
 

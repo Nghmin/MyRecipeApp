@@ -3,10 +3,10 @@ import {
     Image, FlatList, ScrollView, ImageBackground, StatusBar, Alert
 } from 'react-native';
 import React from 'react';
-import { SafeAreaView} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { auth, db } from '../config/firebaseConfig';
+import { auth, db } from '../components/config/firebaseConfig';
 import Config from "react-native-config";
 import Toast from 'react-native-toast-message';
 
@@ -47,6 +47,7 @@ function HomeScreen({ navigation }: any) {
     const [activeTab, setActiveTab] = React.useState('community');
 
     const [userRecipes, setUserRecipes] = React.useState<Recipe[]>([]);
+    const [sharedRecipeIds, setSharedRecipeIds] = React.useState<string[]>([]);
     const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
 
     const [isAiModalVisible, setAiModalVisible] = React.useState(false);
@@ -71,9 +72,9 @@ function HomeScreen({ navigation }: any) {
                             where("isAI", "==", true)
                         );
                         const aiSnapshot = await getDocs(aiQuery);
-                        const aiData = aiSnapshot.docs.map(doc => ({
-                            idRecipe: doc.id,
-                            ...doc.data()
+                        const aiData = aiSnapshot.docs.map(d => ({
+                            idRecipe: d.id,
+                            ...d.data()
                         } as Recipe));
                         setApiRecipes(aiData);
                     }
@@ -85,23 +86,26 @@ function HomeScreen({ navigation }: any) {
         }, [userProfile])
     );
 
-    // Lấy danh sách món ăn cá nhân để chọn khi share
-    const fetchUserRecipes = async () => {
+    const handleOpenShare = async () => {
         const user = auth.currentUser;
         if (!user) return;
         try {
+            // Lấy món cá nhân
             const q = query(collection(db, "Recipes"), where("idUser", "==", user.uid));
             const querySnapshot = await getDocs(q);
-            const data = querySnapshot.docs.map(doc => ({ idRecipe: doc.id, ...doc.data() } as Recipe));
+            const data = querySnapshot.docs.map(d => ({ idRecipe: d.id, ...d.data() } as Recipe));
             setUserRecipes(data);
-        } catch (error) {
-            console.log("Lỗi fetch món cá nhân:", error);
-        }
-    };
 
-    const handleOpenShare = () => {
-        fetchUserRecipes();
-        setIsShareModalOpen(true);
+            // Lấy danh sách ID đã chia sẻ
+            const sharedQ = query(collection(db, "CommunityPosts"), where("idUser", "==", user.uid));
+            const sharedSnapshot = await getDocs(sharedQ);
+            const sharedIds = sharedSnapshot.docs.map(d => d.data().idRecipe);
+            setSharedRecipeIds(sharedIds);
+
+            setIsShareModalOpen(true);
+        } catch (error) {
+            console.log("Lỗi chuẩn bị chia sẻ:", error);
+        }
     };
 
 
@@ -124,7 +128,7 @@ function HomeScreen({ navigation }: any) {
             if (result) {
                 setFavoriteRecipes(prev => [{ ...item, isFavorite: true }, ...prev]);
             } else {
-                setFavoriteRecipes(prev => prev.filter(fav => fav.postId !== item.postId));  
+                setFavoriteRecipes(prev => prev.filter(fav => fav.postId !== item.postId));
             }
         } catch (error) {
             console.log("Lỗi đồng bộ yêu thích tại Home:", error);
@@ -352,7 +356,7 @@ function HomeScreen({ navigation }: any) {
                         onPress={() => setAiModalVisible(true)}
                     >
                         <View
-                            style={[styles.fabAiGradient , { backgroundColor: currentTheme.primary }]}
+                            style={[styles.fabAiGradient, { backgroundColor: currentTheme.primary }]}
                         >
                             <IconMaterial name="robot" size={28} color="#fff" />
                         </View>
@@ -414,6 +418,7 @@ function HomeScreen({ navigation }: any) {
                         isOpen={isShareModalOpen}
                         onClose={() => setIsShareModalOpen(false)}
                         recipes={userRecipes}
+                        sharedRecipeIds={sharedRecipeIds}
                         onShare={handleShareToCommunity}
                     />
 

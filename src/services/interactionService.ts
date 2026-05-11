@@ -1,5 +1,5 @@
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { db,  } from '../config/firebaseConfig';
+import { db,  } from '../components/config/firebaseConfig';
 import { NotificationService } from './notificationService';
 // Quản lý các bộ đếm thời gian cho việc gửi thông báo
 const likeTimers = new Map<string, any>();

@@ -79,7 +79,7 @@ export const RecipeCard = React.memo(({
               {!isAIGenerated ?
                 (<Text style={styles.metaText}>{recipe.prepTime || '20'} phút</Text>)
                 :
-                (<Text style={styles.metaText}>{recipe.cookTime}</Text>)
+                (<Text style={styles.metaText}>{recipe.cookTime || '30'} phút</Text>)
               }
             </View>
             <View style={[styles.metaItem, { marginLeft: 10 }]}>

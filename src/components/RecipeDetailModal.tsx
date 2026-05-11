@@ -19,9 +19,9 @@ import { Recipe } from '../models/Recipe';
 
 import { CommentItem } from './CommentItem';
 
-import { auth, db } from '../config/firebaseConfig';
+import { auth, db } from './config/firebaseConfig';
 import Config from "react-native-config";
-import { toastConfig } from '../config/ToastConfig';
+import { toastConfig } from './config/ToastConfig';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '../theme/ThemeContext';

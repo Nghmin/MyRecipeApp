@@ -15,13 +15,13 @@ import {
 import Animated, { FadeInUp, FadeInLeft } from 'react-native-reanimated';
 
 import { EditProfileModal } from '../components/EditProfileModal';
-import { ThemeSelectionModal} from '../components/ThemeSelectionModal';
+import { ThemeSelectionModal } from '../components/ThemeSelectionModal';
 
-import { auth, db } from '../config/firebaseConfig';
+import { auth, db } from '../components/config/firebaseConfig';
 import Config from "react-native-config";
 
 import { signOut } from 'firebase/auth';
-import { collection, query, where, onSnapshot,  } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, } from 'firebase/firestore';
 
 const menuItems = [
   { icon: Users, label: 'Thông tin cá nhân', desc: 'Chỉnh sửa thông tin' },
@@ -39,11 +39,11 @@ export default function AccountScreen({ navigation }: any) {
   const { currentTheme, setTheme } = useTheme();
   const { userProfile } = useUser();
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  
+
   const [recipeCount, setRecipeCount] = useState(0);
   const [totalLikes, setTotalLikes] = useState(0);
   const [userPosts, setUserPosts] = useState([]);
-  
+
   const AVT_DEFAULT = Config.AVT_DEFAULT!;
 
   // Theo dõi dữ liệu bài viết và công thức theo thời gian thực
@@ -113,7 +113,7 @@ export default function AccountScreen({ navigation }: any) {
         />
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
+
           {/* Header Profile */}
           <Animated.View entering={FadeInUp.delay(200)} style={styles.header}>
             <View style={[styles.avatarWrapper, { borderColor: currentTheme.primary }]}>
@@ -151,11 +151,11 @@ export default function AccountScreen({ navigation }: any) {
                     else if (item.label === 'Bài đăng') navigation.navigate('MyPosts');
                     else if (item.label === 'Giao diện') setIsThemeModalOpen(true);
                     else if (item.label === 'Thông báo') navigation.navigate('Notifications');
-                  
+
                   }}>
                   {/* Icon Box thay đổi màu theo theme đã chọn */}
-                  <LinearGradient 
-                    colors={[currentTheme.primary, currentTheme.secondary]} 
+                  <LinearGradient
+                    colors={[currentTheme.primary, currentTheme.secondary]}
                     style={styles.iconBox}
                   >
                     <item.icon size={22} color="white" />
@@ -183,7 +183,7 @@ export default function AccountScreen({ navigation }: any) {
           isOpen={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
           userData={userProfile as any}
-          onUpdateSuccess={() => {}}
+          onUpdateSuccess={() => { }}
         />
 
         {/* Modal tùy chọn giao diện màu sắc */}
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   avatar: { width: '100%', height: '100%' },
   userName: { color: 'white', fontSize: 27, fontWeight: '600', letterSpacing: 0.5 },
-  userEmail: { color: 'rgba(255, 255, 255, 0.5)', fontSize: 15, marginTop: 2},
+  userEmail: { color: 'rgba(255, 255, 255, 0.5)', fontSize: 15, marginTop: 2 },
   statsContainer: { flexDirection: 'row', gap: 12, marginTop: 10, paddingHorizontal: 15 },
   statCard: {
     flex: 1, backgroundColor: 'rgba(255,255,255,0.08)',

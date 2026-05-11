@@ -4,8 +4,8 @@ import {
   ScrollView, StyleSheet, Platform, KeyboardAvoidingView, Image
 } from 'react-native';
 import { X, Plus, Trash2, Camera, Lightbulb, Check, Zap } from 'lucide-react-native';
-import { auth, db } from '../config/firebaseConfig';
-import { toastConfig } from '../config/ToastConfig';
+import { auth, db } from './config/firebaseConfig';
+import { toastConfig } from './config/ToastConfig';
 import { doc, collection, setDoc, updateDoc } from 'firebase/firestore';
 import { Recipe } from '../models/Recipe';
 import { launchImageLibrary } from 'react-native-image-picker';

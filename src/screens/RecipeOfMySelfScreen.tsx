@@ -8,7 +8,7 @@ import { ChefHat, Plus } from 'lucide-react-native';
 import IconMaterial from 'react-native-vector-icons/MaterialCommunityIcons';
 //
 import { collection, query, where, onSnapshot, orderBy, deleteDoc, doc } from 'firebase/firestore';
-import { db, auth } from '../config/firebaseConfig';
+import { db, auth } from '../components/config/firebaseConfig';
 //
 import { Recipe } from '../models/Recipe';
 

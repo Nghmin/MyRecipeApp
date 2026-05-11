@@ -1,4 +1,4 @@
-import { aiModel } from "../config/geminiConfig";
+import { aiModel } from "../components/config/geminiConfig";
 
 export const aiService = {
   chatHistory: [] as any[],

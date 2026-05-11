@@ -12,7 +12,7 @@ import {
   where, deleteDoc, limit, documentId, getDocs
 } from 'firebase/firestore';
 
-import { db, auth } from '../config/firebaseConfig';
+import { db, auth } from './config/firebaseConfig';
 import Config from "react-native-config";
 import { CommunityPost } from '../models/CommunityPost';
 import { FilterBar } from './FilterBar';

@@ -1,6 +1,6 @@
 // @ts-ignore
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React ,{useState , useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 // import HomeScreen from '../../screens/HomeScreen.tsx';
 // import AccountScreen from '../../screens/AccountScreen.tsx';
 // import RecipeOfMySelfScreen from '../../screens/RecipeOfMySelfScreen.tsx';
@@ -10,7 +10,7 @@ import RegisterScreen from '../../screens/RegisterScreen.tsx';
 import { NotificationScreen } from '../../screens/NotificationScreen.tsx';
 
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../config/firebaseConfig';
+import { auth } from '../../components/config/firebaseConfig.ts';
 import MainTabView from '../MainTab/MainTabView.tsx'
 const stacks = createNativeStackNavigator();
 function MainStack() {
@@ -25,12 +25,12 @@ function MainStack() {
         return unsubscribe;
     }, []);
     if (loading) return null;
-    return ( 
+    return (
         <stacks.Navigator screenOptions={{ headerShown: false }}>
-            {user? (<>
-                <stacks.Screen name="TabView" component={MainTabView}/>
-                <stacks.Screen name="MyPosts" component={MyPostsScreen}/>
-                <stacks.Screen name="Notifications" component={NotificationScreen}/>
+            {user ? (<>
+                <stacks.Screen name="TabView" component={MainTabView} />
+                <stacks.Screen name="MyPosts" component={MyPostsScreen} />
+                <stacks.Screen name="Notifications" component={NotificationScreen} />
                 {/* <stacks.Screen name="Home" component={HomeScreen} />
                 <stacks.Screen name="My Recipe" component={RecipeOfMySelfScreen}/>
                 <stacks.Screen name="Account" component={AccountScreen} /> */}

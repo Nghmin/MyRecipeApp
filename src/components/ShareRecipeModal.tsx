@@ -18,18 +18,20 @@ import Config from "react-native-config";
 import { useTheme } from '../theme/ThemeContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const AVT_DEFAULT = Config.AVATAR_DEFAULT ;
+const AVT_DEFAULT = Config.AVT_DEFAULT ;
 
 interface ShareRecipeModalProps {
   isOpen: boolean;
   onClose: () => void;
   recipes: Recipe[];
+  sharedRecipeIds: string[];
   onShare: (recipe: Recipe) => void;
 }
 
-export function ShareRecipeModal({ isOpen, onClose, recipes, onShare }: ShareRecipeModalProps) {
+export function ShareRecipeModal({ isOpen, onClose, recipes, sharedRecipeIds, onShare }: ShareRecipeModalProps) {
   const [selectedRecipe, setSelectedRecipe] = useState<string | null>(null);
   const { currentTheme } = useTheme();
+
   const handleShare = () => {
     if (selectedRecipe) {
       const recipeToShare = recipes.find(r => r.idRecipe === selectedRecipe);
@@ -76,34 +78,49 @@ export function ShareRecipeModal({ isOpen, onClose, recipes, onShare }: ShareRec
                 <Text style={styles.emptySubText}>Hãy thêm công thức mới để chia sẻ!</Text>
               </View>
             ) : (
-              recipes.map((recipe) => (
-                <TouchableOpacity
-                  key={recipe.idRecipe}
-                  activeOpacity={0.7}
-                  onPress={() => setSelectedRecipe(recipe.idRecipe)}
-                  style={[
-                    styles.recipeItem,
-                    selectedRecipe === recipe.idRecipe ? [styles.selectedItem, { borderColor: currentTheme.primary }] : [styles.unselectedItem]
-                  ]}
-                >
-                  <Image 
-                    source={{ uri: recipe.image || AVT_DEFAULT}} 
-                    style={styles.recipeImage}
-                  
-                  />
-                  
-                  <View style={styles.infoContainer}>
-                    <Text style={styles.recipeName} numberOfLines={1}>{recipe.name}</Text>
-                    <Text style={styles.recipeDesc} numberOfLines={1}>{recipe.description}</Text>
-                  </View>
+              recipes.map((recipe) => {
+                const isShared = sharedRecipeIds.includes(recipe.idRecipe);
+                return (
+                  <TouchableOpacity
+                    key={recipe.idRecipe}
+                    activeOpacity={isShared ? 1 : 0.7}
+                    onPress={() => !isShared && setSelectedRecipe(recipe.idRecipe)}
+                    disabled={isShared}
+                    style={[
+                      styles.recipeItem,
+                      selectedRecipe === recipe.idRecipe ? [styles.selectedItem, { borderColor: currentTheme.primary }] : [styles.unselectedItem],
+                      isShared && styles.sharedItem
+                    ]}
+                  >
+                    <Image
+                      source={{ uri: recipe.image || AVT_DEFAULT}}
+                      style={[styles.recipeImage, isShared && { opacity: 0.5 }]}
+                    />
 
-                  {selectedRecipe === recipe.idRecipe && (
-                    <View style={[styles.checkBadge, { backgroundColor: currentTheme.primary }]}>
-                      <Check size={14} color="white" strokeWidth={3} />
+                    <View style={styles.infoContainer}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Text style={[styles.recipeName, isShared && { color: '#9CA3AF' }]} numberOfLines={1}>
+                          {recipe.name}
+                        </Text>
+                        {isShared && (
+                          <View style={styles.sharedBadge}>
+                            <Text style={styles.sharedBadgeText}>Đã chia sẻ</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={[styles.recipeDesc, isShared && { color: '#D1D5DB' }]} numberOfLines={1}>
+                        {recipe.description}
+                      </Text>
                     </View>
-                  )}
-                </TouchableOpacity>
-              ))
+
+                    {selectedRecipe === recipe.idRecipe && !isShared && (
+                      <View style={[styles.checkBadge, { backgroundColor: currentTheme.primary }]}>
+                        <Check size={14} color="white" strokeWidth={3} />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })
             )}
           </ScrollView>
 
@@ -203,6 +220,11 @@ const styles = StyleSheet.create({
     borderColor: '#F3F4F6',
     backgroundColor: 'white',
   },
+  sharedItem: {
+    borderColor: '#F9FAFB',
+    backgroundColor: '#F9FAFB',
+    opacity: 0.7,
+  },
   recipeImage: {
     width: 60,
     height: 60,
@@ -222,6 +244,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#6B7280',
     marginTop: 4,
+  },
+  sharedBadge: {
+    backgroundColor: '#E5E7EB',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  sharedBadgeText: {
+    fontSize: 10,
+    color: '#6B7280',
+    fontWeight: '600',
   },
   checkBadge: {
     //backgroundColor: '#F97316',

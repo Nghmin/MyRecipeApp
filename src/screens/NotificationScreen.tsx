@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Heart, MessageCircle, Bell, ChevronRight, ChevronLeft } from 'lucide-react-native';
-import { db, auth } from '../config/firebaseConfig';
+import { db, auth } from '../components/config/firebaseConfig';
 import {
   collection,
   query,
@@ -122,7 +122,7 @@ export const NotificationScreen = ({ navigation }: any) => {
       {!item.isRead && (
         <View style={[styles.unreadDot, { backgroundColor: currentTheme.primary }]} />
       )}
-      
+
       <ChevronRight size={16} color="#4B5563" />
     </TouchableOpacity>
   );
@@ -139,7 +139,7 @@ export const NotificationScreen = ({ navigation }: any) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ChevronLeft color="white" size={28} />
+          <ChevronLeft color="white" size={28} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Thông báo</Text>
         {notifications.filter(n => !n.isRead).length > 0 && (
@@ -168,7 +168,7 @@ export const NotificationScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000', 
+    backgroundColor: '#000',
   },
   centered: {
     flex: 1,

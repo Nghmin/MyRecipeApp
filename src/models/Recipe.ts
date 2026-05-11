@@ -7,6 +7,7 @@ export interface Recipe {
   rating: number; 
   reviews: number;
   prepTime: number;
+  cookTime?: string; // Thời gian nấu (từ AI)
   difficulty: 'Dễ' | 'Trung bình' | 'Khó';
   category: string[];
   ingredients: string[]; // Danh sách nguyên liệu

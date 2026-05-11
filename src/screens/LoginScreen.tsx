@@ -8,8 +8,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Mail, Lock, ArrowRight } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import { auth } from '../config/firebaseConfig';
-import { getAuthErrorMessage } from '../config/authErrors';
+import { auth } from '../components/config/firebaseConfig';
+import { getAuthErrorMessage } from '../components/config/authErrors';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const { width } = Dimensions.get('window');
@@ -46,12 +46,12 @@ const LoginScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.container}>
       {/* Hình trang trí phía sau */}
       <View style={styles.circleDecor} />
-      
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    
+
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,

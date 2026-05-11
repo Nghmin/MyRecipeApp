@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { 
-  StyleSheet, Text, View, TextInput, TouchableOpacity, 
+import {
+  StyleSheet, Text, View, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, Dimensions
 } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -8,9 +8,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { User as UserIcon, Mail, Lock, UserPlus, ChevronLeft, ShieldCheck } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import { auth, db } from '../config/firebaseConfig';
+import { auth, db } from '../components/config/firebaseConfig';
 import Config from "react-native-config";
-import { getAuthErrorMessage } from '../config/authErrors';
+import { getAuthErrorMessage } from '../components/config/authErrors';
 
 import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { User } from '../models/User';
@@ -37,7 +37,7 @@ const RegisterScreen = ({ navigation }: any) => {
   }
 
   const checkValidRegister = () => {
-    
+
     if (!user.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
       toastShow('error', 'Lỗi Đăng Ký', 'Vui lòng điền đầy đủ các trường.');
       return false;
@@ -59,7 +59,7 @@ const RegisterScreen = ({ navigation }: any) => {
 
     try {
       const userCreate = await createUserWithEmailAndPassword(auth, email, password);
-      
+
       const newUser: User = {
         idUser: userCreate.user.uid,
         name: user,
@@ -71,7 +71,7 @@ const RegisterScreen = ({ navigation }: any) => {
 
       await setDoc(doc(db, 'Users', newUser.idUser!), newUser);
       await signOut(auth);
-      toastShow (
+      toastShow(
         'successLogin',
         'Đăng ký thành công!',
         'Hãy tạo ra thêm nhiều công thức của bạn ️🎉!',
@@ -85,18 +85,18 @@ const RegisterScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.circleDecor} />
 
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
           <ChevronLeft size={28} color="#1E293B" />
         </TouchableOpacity>
 
-        <ScrollView 
+        <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
@@ -111,8 +111,8 @@ const RegisterScreen = ({ navigation }: any) => {
               <Text style={styles.inputLabel}>Họ và tên</Text>
               <View style={styles.inputWrapper}>
                 <UserIcon size={20} color="#94A3B8" style={styles.inputIcon} />
-                <TextInput 
-                  placeholder="Tên của bạn" 
+                <TextInput
+                  placeholder="Tên của bạn"
                   style={styles.input}
                   placeholderTextColor="#94A3B8"
                   value={user}
@@ -126,8 +126,8 @@ const RegisterScreen = ({ navigation }: any) => {
               <Text style={styles.inputLabel}>Email</Text>
               <View style={styles.inputWrapper}>
                 <Mail size={20} color="#94A3B8" style={styles.inputIcon} />
-                <TextInput 
-                  placeholder="example@gmail.com" 
+                <TextInput
+                  placeholder="example@gmail.com"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   style={styles.input}
@@ -143,8 +143,8 @@ const RegisterScreen = ({ navigation }: any) => {
               <Text style={styles.inputLabel}>Mật khẩu</Text>
               <View style={styles.inputWrapper}>
                 <Lock size={20} color="#94A3B8" style={styles.inputIcon} />
-                <TextInput 
-                  placeholder="••••••••" 
+                <TextInput
+                  placeholder="••••••••"
                   secureTextEntry
                   style={styles.input}
                   placeholderTextColor="#94A3B8"
@@ -159,8 +159,8 @@ const RegisterScreen = ({ navigation }: any) => {
               <Text style={styles.inputLabel}>Xác nhận mật khẩu</Text>
               <View style={styles.inputWrapper}>
                 <ShieldCheck size={20} color="#94A3B8" style={styles.inputIcon} />
-                <TextInput 
-                  placeholder="Nhập lại mật khẩu" 
+                <TextInput
+                  placeholder="Nhập lại mật khẩu"
                   secureTextEntry
                   style={styles.input}
                   placeholderTextColor="#94A3B8"
@@ -171,14 +171,14 @@ const RegisterScreen = ({ navigation }: any) => {
             </View>
 
             <Text style={styles.termsText}>
-              Bằng cách đăng ký, bạn đồng ý với 
-              <Text style={styles.linkText}> Điều khoản </Text> & 
+              Bằng cách đăng ký, bạn đồng ý với
+              <Text style={styles.linkText}> Điều khoản </Text> &
               <Text style={styles.linkText}> Chính sách</Text> của chúng tôi.
             </Text>
-      
+
             <TouchableOpacity activeOpacity={0.8} onPress={handleRegister}>
               <LinearGradient
-                colors={['#2e24edc9', '#F97316']} 
+                colors={['#2e24edc9', '#F97316']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.registerBtn}
@@ -245,11 +245,11 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 16, color: '#1E293B', fontWeight: '500' },
   termsText: { fontSize: 13, color: '#888', textAlign: 'center', marginVertical: 20, lineHeight: 20 },
   linkText: { color: '#045cffff', fontWeight: '700' },
-  registerBtn: { 
+  registerBtn: {
     flexDirection: 'row',
-    height: 60, 
-    borderRadius: 20, 
-    justifyContent: 'center', 
+    height: 60,
+    borderRadius: 20,
+    justifyContent: 'center',
     alignItems: 'center',
     gap: 10,
     shadowColor: '#059669',
