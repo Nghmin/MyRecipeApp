@@ -6,13 +6,20 @@ import {
 import {
   Users, Plus, Heart, Bookmark, Star, MessageCircle, Trash2, ChevronUp, SearchX
 } from 'lucide-react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import Animated, {
+  FadeInUp,
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  withSpring,
+  withTiming
+} from 'react-native-reanimated';
 import {
   collection, query, orderBy, onSnapshot, doc,
   where, deleteDoc, limit, documentId, getDocs
 } from 'firebase/firestore';
 
-import { db, auth } from './config/firebaseConfig';
+import { db, auth } from '../config/firebaseConfig';
 import Config from "react-native-config";
 import { CommunityPost } from '../models/CommunityPost';
 import { FilterBar } from './FilterBar';
@@ -23,7 +30,7 @@ import Toast from 'react-native-toast-message';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../theme/UserContext';
 
-const AVT_DEFAULT = Config.AVATAR_DEFAULT;
+const AVT_DEFAULT = Config.AVT_DEFAULT!;
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 15 },
@@ -53,41 +60,52 @@ const styles = StyleSheet.create({
   shareText: { color: 'white', fontWeight: 'bold' },
   backToTopBtn: {
     position: 'absolute',
-    bottom: 70,
+    bottom: 110,
     right: 20,
     width: 50,
     height: 50,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#EF4444',
+    borderWidth: 2,
+    borderColor: '#FFF',
   },
   newPostsContainer: {
     position: 'absolute',
-    top: 130,
     left: 0,
     right: 0,
     alignItems: 'center',
-    zIndex: 99999,
-    elevation: 100,
+    zIndex: 9999,
+    elevation: 20,
   },
   newPostsBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingVertical: 12,
     borderRadius: 30,
     backgroundColor: '#3B82F6',
-    elevation: 8,
+    elevation: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   newPostsText: {
     color: 'white',
@@ -157,7 +175,8 @@ export function CommunityFeed({
   const [activeFilter, setActiveFilter] = useState('newest');
 
   const listRef = useRef<FlatList>(null);
-  const [showBackToTop, setShowBackToTop] = useState(false);
+  const scrollY = useSharedValue(0);
+  const headerHeight = useSharedValue(0);
 
   const { currentTheme } = useTheme();
   const { userProfile } = useUser();
@@ -282,8 +301,9 @@ export function CommunityFeed({
       setPosts(prev => [...newPostsBuffer, ...prev]);
       setNewPostsBuffer([]);
       listRef.current?.scrollToOffset({ offset: 0, animated: true });
+      scrollY.value = 0;
     }
-  }, [newPostsBuffer]);
+  }, [newPostsBuffer , scrollY]);
 
   const handleLoadMore = useCallback(() => {
     if (!loading && !loadingMore && hasMore && mode === 'all') {
@@ -291,6 +311,26 @@ export function CommunityFeed({
       setDisplayLimit(prev => prev + 10);
     }
   }, [loading, loadingMore, hasMore, mode]);
+
+  // HÀM TEST GIẢ LẬP BÀI ĐĂNG MỚI (Nhấn giữ nút Đăng bài để kích hoạt)
+  const handleTestNewPost = () => {
+    const fakePost: CommunityPost = {
+      postId: 'test-' + Date.now(),
+      idUser: 'fake-user',
+      userName: 'Người dùng Thử nghiệm',
+      userAvatar: AVT_DEFAULT,
+      name: 'Món ăn mới giả lập ' + (newPostsBuffer.length + 1),
+      image: 'https://picsum.photos/400/250',
+      description: 'Đây là bài viết giả lập để kiểm tra tính năng thông báo bài mới.',
+      sharedAt: { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 } as any,
+      likesCount: 99,
+      commentsCount: 5,
+      likedBy: [],
+      rating: 5,
+    };
+    setNewPostsBuffer(prev => [fakePost, ...prev]);
+    toastShow('info', 'Test Mode', 'Đã giả lập bài đăng mới! Hãy thử cuộn xuống để xem Badge ở nút BackToTop.');
+  };
 
   const toastShow = useCallback((type: string, title: string, text: string) => {
     Toast.show({
@@ -314,10 +354,37 @@ export function CommunityFeed({
     });
   }, []);
 
-  const handleScroll = useCallback((event: any) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    setShowBackToTop(offsetY > 500);
-  }, []);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+
+  const animatedNewPostsStyle = useAnimatedStyle(() => {
+    // Vị trí dính lại ở trên cùng khi cuộn
+    const stickyTop = 10;
+
+    // Vị trí bắt đầu: ngay sát trên thẻ bài viết đầu tiên (sau Header và Filter)
+    const startTop = headerHeight.value > 0 ? headerHeight.value - 45 : 350;
+    const currentTop = startTop - scrollY.value;
+
+    // TỐI ƯU UX: Ẩn nút lơ lửng ở trên khi đã cuộn xuống quá sâu (> 800)
+    const isDeepDown = scrollY.value > 800;
+
+    return {
+      top: currentTop < stickyTop ? stickyTop : currentTop,
+      opacity: withTiming((newPostsBuffer.length > 0 && !isDeepDown) ? 1 : 0),
+      transform: [
+        { scale: withSpring((newPostsBuffer.length > 0 && !isDeepDown) ? 1.05 : 0.8) }
+      ],
+    };
+  }, [newPostsBuffer.length]);
+
+  const animatedBackToTopStyle = useAnimatedStyle(() => {
+    const isVisible = scrollY.value > 500;
+    return {
+      opacity: withTiming(isVisible ? 1 : 0),
+      transform: [{ scale: withSpring(isVisible ? 1 : 0) }],
+    };
+  });
 
   const scrollToTop = useCallback(() => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -450,10 +517,11 @@ export function CommunityFeed({
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <Animated.FlatList
         data={filteredPosts}
-        ref={listRef}
-        onScroll={handleScroll}
+        ref={listRef as any}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         keyExtractor={(snapDoc) => snapDoc.postId}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
@@ -465,7 +533,7 @@ export function CommunityFeed({
         renderItem={renderItem}
         ListFooterComponent={renderFooter}
         ListHeaderComponent={
-          <>
+          <View onLayout={(e) => { headerHeight.value = e.nativeEvent.layout.height; }}>
             {ListHeaderComponent}
             {mode === 'all' && (
               <View style={[styles.header, styles.headerMain, { borderColor: currentTheme.primary }]}>
@@ -478,7 +546,12 @@ export function CommunityFeed({
                     <Text style={styles.subtitle}>Công thức từ mọi người</Text>
                   </View>
                 </View>
-                <TouchableOpacity onPress={onOpenShareModal} style={[styles.shareButton, { backgroundColor: currentTheme.primary }]} activeOpacity={0.8}>
+                <TouchableOpacity
+                  onLongPress={handleTestNewPost} // NHẤN GIỮ ĐỂ TEST
+                  onPress={onOpenShareModal}
+                  style={[styles.shareButton, { backgroundColor: currentTheme.primary }]}
+                  activeOpacity={0.8}
+                >
                   <Plus size={18} color="white" />
                   <Text style={styles.shareText}>Đăng bài</Text>
                 </TouchableOpacity>
@@ -490,32 +563,43 @@ export function CommunityFeed({
               activeFilter={activeFilter}
               onFilterChange={setActiveFilter}
             />
-          </>
+          </View>
         }
         ListEmptyComponent={renderEmpty}
       />
 
-      {newPostsBuffer.length > 0 && (
-        <Animated.View entering={FadeInUp} style={styles.newPostsContainer}>
-          <TouchableOpacity
-            style={[styles.newPostsBtn, { backgroundColor: currentTheme.primary }]}
-            onPress={handleApplyNewPosts}
-            activeOpacity={0.9}
-          >
-            <Text style={styles.newPostsText}>✨ Có bài viết mới</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
-
-      {showBackToTop && (
+      <Animated.View
+        style={[styles.newPostsContainer, animatedNewPostsStyle]}
+        pointerEvents={newPostsBuffer.length > 0 ? 'auto' : 'none'}
+      >
         <TouchableOpacity
-          style={[styles.backToTopBtn, { backgroundColor: currentTheme.primary }]}
+          style={[styles.newPostsBtn, { backgroundColor: currentTheme.primary }]}
+          onPress={handleApplyNewPosts}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.newPostsText}>✨ Có bài viết mới</Text>
+        </TouchableOpacity>
+      </Animated.View>
+
+      <Animated.View
+        style={[
+          styles.backToTopBtn,
+          { backgroundColor: currentTheme.primary },
+          animatedBackToTopStyle
+        ]}
+      >
+        <TouchableOpacity
           onPress={scrollToTop}
           activeOpacity={0.8}
+          style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
         >
-          <ChevronUp color="white" size={30} />
+          <ChevronUp color="white" size={28} />
+          {/* Chấm đỏ thông báo có bài mới tích hợp vào nút BackToTop */}
+          {newPostsBuffer.length > 0 && (
+            <View style={styles.notificationBadge} />
+          )}
         </TouchableOpacity>
-      )}
+      </Animated.View>
     </View>
   );
 }

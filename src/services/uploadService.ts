@@ -1,6 +1,6 @@
 import RNBlobUtil from 'react-native-blob-util';
 import { decode } from 'base64-arraybuffer'; 
-import { supabase } from '../components/config/supabaseConfig';
+import { supabase } from '../config/supabaseConfig';
 
 export const deleteImageFromSupabase = async (imageUrl: string) => {
   try {

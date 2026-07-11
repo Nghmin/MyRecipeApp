@@ -1,4 +1,4 @@
-import { db, auth } from '../components/config/firebaseConfig';
+import { db, auth } from '../config/firebaseConfig';
 import { 
   collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, 
 } from 'firebase/firestore';
@@ -37,9 +37,9 @@ export const NotificationService = {
         orderBy("createdAt", "desc") // Thông báo mới nhất hiện lên đầu
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      return querySnapshot.docs.map(d => ({
+        id: d.id,
+        ...d.data()
       }));
     } catch (error) {
       console.error("Lỗi lấy thông báo:", error);

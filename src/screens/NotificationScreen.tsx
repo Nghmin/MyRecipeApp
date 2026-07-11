@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Heart, MessageCircle, Bell, ChevronRight, ChevronLeft } from 'lucide-react-native';
-import { db, auth } from '../components/config/firebaseConfig';
+import { db, auth } from '../config/firebaseConfig';
 import {
   collection,
   query,

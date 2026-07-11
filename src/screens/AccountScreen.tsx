@@ -17,7 +17,7 @@ import Animated, { FadeInUp, FadeInLeft } from 'react-native-reanimated';
 import { EditProfileModal } from '../components/EditProfileModal';
 import { ThemeSelectionModal } from '../components/ThemeSelectionModal';
 
-import { auth, db } from '../components/config/firebaseConfig';
+import { auth, db } from '../config/firebaseConfig';
 import Config from "react-native-config";
 
 import { signOut } from 'firebase/auth';
@@ -67,10 +67,10 @@ export default function AccountScreen({ navigation }: any) {
       let totalLikesCount = 0;
       const postsList: any = [];
 
-      snapshot.docs.forEach(doc => {
-        const data = doc.data();
+      snapshot.docs.forEach(d => {
+        const data = d.data();
         totalLikesCount += data.likesCount || 0;
-        postsList.push({ id: doc.id, name: data.name });
+        postsList.push({ id: d.id, name: data.name });
       });
       setTotalLikes(totalLikesCount);
       setUserPosts(postsList);

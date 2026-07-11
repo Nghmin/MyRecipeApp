@@ -6,9 +6,9 @@ import { uploadImageToSupabase, deleteImageFromSupabase } from '../services/uplo
 
 import { X, Camera, Check } from 'lucide-react-native';
 
-import { auth, db } from './config/firebaseConfig';
+import { auth, db } from '../config/firebaseConfig';
 import Config from "react-native-config";
-import { toastConfig } from './config/ToastConfig';
+import { toastConfig } from '../config/ToastConfig';
 
 import Toast from 'react-native-toast-message';
 
@@ -33,7 +33,7 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
   const [avatarUri, setAvatarUri] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const AVT_DEFAULT = Config.AVATAR_DEFAULT;;
+  const AVT_DEFAULT = Config.AVT_DEFAULT!;
 
   useEffect(() => {
     if (userData) {
@@ -76,7 +76,7 @@ export function EditProfileModal({ isOpen, onClose, userData, onUpdateSuccess }:
     try {
       const userId = auth.currentUser?.uid;
       // userData.uid lấy từ UserContext, nếu không có thì dùng userId từ Auth
-      const targetId = userData?.uid || userId;
+      const targetId = (userData as any)?.uid || userId;
 
       if (!targetId) {
         toastShow('error', 'Lỗi', 'Không tìm thấy ID người dùng');

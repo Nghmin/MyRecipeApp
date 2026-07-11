@@ -1,120 +1,30 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Platform,
-  Animated,
-  Easing,
 } from 'react-native';
 import { Home, User, ChefHat } from 'lucide-react-native';
-import LinearGradient from 'react-native-linear-gradient';
-
 import { useTheme } from '../theme/ThemeContext';
-
 
 interface BottomNavProps {
   activeTab: 'Home' | 'My Recipe' | 'Account';
   onTabChange: (tab: 'Home' | 'My Recipe' | 'Account') => void;
 }
 
-function Snowflake({ delay, left }: { delay: number; left: string }) {
-  const fallAnim = useRef(new Animated.Value(-20)).current;
-  const shakeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Hiệu ứng rơi từ trên xuống
-    const fallAnimation = Animated.loop(
-      Animated.sequence([
-        Animated.delay(delay),
-        Animated.timing(fallAnim, {
-          toValue: 120,
-          duration: 4000 + Math.random() * 2000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    // Hiệu ứng lắc lư ngang 
-    const shakeAnimation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shakeAnim, {
-          toValue: 10,
-          duration: 1000 + Math.random() * 500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(shakeAnim, {
-          toValue: -10,
-          duration: 1000 + Math.random() * 500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    fallAnimation.start();
-    shakeAnimation.start();
-
-    // Cleanup khi component bị hủy để tránh tốn tài nguyên
-    return () => {
-      fallAnimation.stop();
-      shakeAnimation.stop();
-    };
-  }, [delay, fallAnim, shakeAnim]);
-
-  return (
-    <Animated.View
-      style={[
-        styles.snowflake,
-        {
-          left: left as any,
-          transform: [{ translateY: fallAnim }, { translateX: shakeAnim }],
-        },
-      ]}
-    >
-      <Text style={{ color: 'white', fontSize: 10 }}>❄️</Text>
-    </Animated.View>
-  );
-}
-
-
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const { currentTheme } = useTheme();
 
-  // Dữ liệu bông tuyết rơi
-  const snowflakes = [
-    { delay: 0, left: '10%' },
-    { delay: 500, left: '25%' },
-    { delay: 1200, left: '40%' },
-    { delay: 1800, left: '55%' },
-    { delay: 2500, left: '70%' },
-    { delay: 800, left: '85%' },
-  ];
-  // Định nghĩa các Tab
   const tabs = [
-    { id: 'Home', label: 'Trang chủ', icon: Home, color: currentTheme.primary },
-    { id: 'My Recipe', label: 'Công thức', icon: ChefHat, color: currentTheme.primary },
-    { id: 'Account', label: 'Tài khoản', icon: User, color: currentTheme.primary },
+    { id: 'Home', label: 'Trang chủ', icon: Home },
+    { id: 'My Recipe', label: 'Công thức', icon: ChefHat },
+    { id: 'Account', label: 'Tài khoản', icon: User },
   ];
 
   return (
-    <View style={[styles.container, { borderColor: currentTheme.primary }]}>
-      {/* Nền Gradient Giáng Sinh */}
-      <LinearGradient
-        colors={['#E0F2F7', '#B2D8E5']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.gradientBg}
-      />
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        {snowflakes.map((s, i) => (
-          <Snowflake key={i} delay={s.delay} left={s.left} />
-        ))}
-      </View>
-
+    <View style={[styles.container, { backgroundColor: 'rgba(10, 8, 8, 0.43)' }]}>
       <View style={styles.navContent}>
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -125,39 +35,42 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               key={tab.id}
               onPress={() => onTabChange(tab.id as any)}
               style={styles.tabButton}
-              activeOpacity={0.8}
+              activeOpacity={0.7}
             >
-              {/* Chỉ báo Tab đang hoạt động */}
-              {isActive && (
-                <View style={styles.activeIndicator}>
-                  <View style={[styles.activeLine, { backgroundColor: tab.color }]} />
-                </View>
-              )}
-
-              {/* Icon tab */}
               <View
                 style={[
                   styles.iconCircle,
-                  { backgroundColor: isActive ? tab.color : 'rgba(245, 108, 3, 0.33)' },
-                  { borderColor: isActive ? 'white' : tab.color }
+                  {
+                    backgroundColor: isActive ? currentTheme.primary : 'rgba(255,255,255,0.5)',
+                    borderRadius: 50,
+                  },
+                
                 ]}
               >
                 <IconComponent
-                  size={25}
-                  color={isActive ? 'white' : tab.color}
-                  strokeWidth={2.5}
+                  size={24}
+                  color={isActive ? 'white' : 'rgba(255,255,255,0.5)'}
+                  strokeWidth={isActive ? 2.5 : 2}
                 />
               </View>
 
-              {/* Tên Tab */}
-              <Text style={[styles.label, { color: isActive ? tab.color : 'black' }]}>
-                {isActive ? tab.label : `${tab.label}`}
+              <Text style={[
+                styles.label,
+                {
+                  color: isActive ? 'white' : 'rgba(255,255,255,0.4)',
+                  fontWeight: isActive ? '700' : '500'
+                }
+              ]}>
+                {tab.label}
               </Text>
+
+              {isActive && (
+                <View style={[styles.activeDot, { backgroundColor: currentTheme.primary }]} />
+              )}
             </TouchableOpacity>
           );
         })}
       </View>
-      <View style={styles.bottomBorder} />
     </View>
   );
 }
@@ -165,67 +78,48 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 30 : 15,
-    left: 8,
-    right: 8,
+    bottom: Platform.OS === 'ios' ? 30 : 20,
+    left: 15,
+    right: 15,
     height: 70,
-    borderRadius: 15,
-    overflow: 'hidden',
-
-    elevation: 15,
-
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+    borderRadius: 25,
     borderWidth: 2,
-    //borderColor: '#fa9e15ff',
-  },
-  gradientBg: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  snowflake: {
-    position: 'absolute',
-    top: -10,
-    zIndex: 1,
+    borderColor: 'rgba(33, 18, 18, 0.1)',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
   },
   navContent: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
     height: '100%',
-    paddingHorizontal: 10,
   },
   tabButton: {
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-  },
-  iconCircle: {
-    padding: 8,
-    borderRadius: 12,
-    borderWidth: 2,
     
   },
-  label: {
-    fontSize: 9,
-    fontWeight: '800',
-    marginTop: 1,
-  },
-  activeIndicator: {
-    position: 'absolute',
-    top: -12,
+  iconCircle: {
+    width: 45,
+    height: 45,
+    borderRadius: 50,
+    justifyContent: 'center',
     alignItems: 'center',
-
+    marginBottom: 2,
   },
-  activeLine: {
-    width: 30,
-    height: 2,
+  label: {
+    fontSize: 10,
+    textShadowRadius: 0, 
+  },
+  activeDot: {
+    width: 4,
+    height: 4,
     borderRadius: 2,
-
-  },
-
-  bottomBorder: {
-    display: 'none',
+    marginTop: 2,
+    
   },
 });

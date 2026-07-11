@@ -19,9 +19,9 @@ import { Recipe } from '../models/Recipe';
 
 import { CommentItem } from './CommentItem';
 
-import { auth, db } from './config/firebaseConfig';
+import { auth, db } from '../config/firebaseConfig';
 import Config from "react-native-config";
-import { toastConfig } from './config/ToastConfig';
+import { toastConfig } from '../config/ToastConfig';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '../theme/ThemeContext';
@@ -241,7 +241,9 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
                 <View style={styles.infoItem}>
                   <Clock size={16} color="#FFF" />
                   {recipe.cookTime ? (
-                    <Text style={styles.infoText}>{recipe.cookTime || '0'}</Text>
+                    <Text style={styles.infoText}>
+                      {recipe.cookTime.includes('phút') ? recipe.cookTime : `${recipe.cookTime} phút`}
+                    </Text>
                   ) : (
                     <Text style={styles.infoText}>{recipe.prepTime || '0'} phút</Text>
                   )}

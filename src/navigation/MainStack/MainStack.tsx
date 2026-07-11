@@ -10,7 +10,7 @@ import RegisterScreen from '../../screens/RegisterScreen.tsx';
 import { NotificationScreen } from '../../screens/NotificationScreen.tsx';
 
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../components/config/firebaseConfig.ts';
+import { auth } from '../../config/firebaseConfig.ts';
 import MainTabView from '../MainTab/MainTabView.tsx'
 const stacks = createNativeStackNavigator();
 function MainStack() {

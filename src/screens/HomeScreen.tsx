@@ -6,7 +6,7 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { auth, db } from '../components/config/firebaseConfig';
+import { auth, db } from '../config/firebaseConfig';
 import Config from "react-native-config";
 import Toast from 'react-native-toast-message';
 
@@ -51,7 +51,7 @@ function HomeScreen({ navigation }: any) {
     const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
 
     const [isAiModalVisible, setAiModalVisible] = React.useState(false);
-    //const [userIngredients, setUserIngredients] = React.useState(''); 
+    //const [userIngredients, setUserIngredients] = React.useState('');
 
     const userName = userProfile?.name || 'Người dùng';
     const userAvatar = userProfile?.avatar || AVT_DEFAULT;
@@ -120,7 +120,7 @@ function HomeScreen({ navigation }: any) {
         });
     }
 
-    // Xử lý yêu thích 
+    // Xử lý yêu thích
     const handleToggleFavorite = async (item: any) => {
         const isFav = favoriteRecipes.some(fav => fav.postId === item.postId);
         try {
