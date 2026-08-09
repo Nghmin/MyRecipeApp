@@ -4,7 +4,6 @@ import {
 } from 'firebase/firestore';
 
 export const NotificationService = {
-  // Hàm "bắn" thông báo
   sendNotification: async (receiverId: string, senderName: string, senderAvatar: string, type: 'like' | 'comment' | 'system', relatedId: string) => {
     const user = auth.currentUser;
     if (!user || user.uid === receiverId) return; 

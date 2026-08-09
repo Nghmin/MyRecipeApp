@@ -1,13 +1,12 @@
 import RNBlobUtil from 'react-native-blob-util';
 import { decode } from 'base64-arraybuffer'; 
 import { supabase } from '../config/supabaseConfig';
+import { Platform } from 'react-native';
 
 export const deleteImageFromSupabase = async (imageUrl: string) => {
   try {
-    // Kiểm tra đầu vào
     if (!imageUrl || !imageUrl.includes('supabase.co')) return;
 
-    //Tách lấy filePath từ URL
     const bucketName = 'MyFirstApp';
     const searchStr = `/${bucketName}/`;
     const parts = imageUrl.split(searchStr);
@@ -28,31 +27,52 @@ export const deleteImageFromSupabase = async (imageUrl: string) => {
 
     console.log(" Đã xóa ảnh cũ thành công");
   } catch (error) {
-    // ĐÃ FIX LỖI CÚ PHÁP Ở DÒNG NÀY
     console.error(" Lỗi hệ thống khi xóa ảnh:", error);
   }
 };
 
 export const uploadImageToSupabase = async (uri: string, folder: string, userId: string) => {
   try {
-    const cleanFilePath = uri.replace('file://', '');
+    console.log("--- Bắt đầu Upload ---");
+    console.log("Gốc URI:", uri);
     
-    const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
+    let cleanFilePath = uri;
+    if (Platform.OS === 'android') {
+      // Xử lý cả file:// và file:///
+      cleanFilePath = uri.replace(/^file:\/\/\//, '/').replace(/^file:\/\//, '/');
+      cleanFilePath = decodeURIComponent(cleanFilePath);
+    }
+
+    console.log("Đường dẫn sau khi làm sạch:", cleanFilePath);
+
+    const fileExt = uri.split('?')[0].split('.').pop()?.toLowerCase() || 'jpg';
     const fileName = `${userId}_${Date.now()}.${fileExt}`;
     const filePath = `${folder}/${fileName}`;
 
-    const base64Data = await RNBlobUtil.fs.readFile(cleanFilePath, 'base64');
+    let base64Data: string;
+    try {
+      base64Data = await RNBlobUtil.fs.readFile(cleanFilePath, 'base64');
+    } catch (readErr: any) {
+      console.error("Lỗi đọc file (FS):", readErr.message);
+      // Thử lại với URI gốc nếu đường dẫn làm sạch thất bại
+      try {
+        base64Data = await RNBlobUtil.fs.readFile(uri, 'base64');
+      } catch (finalErr: any) {
+        throw new Error(`Không thể đọc file từ thiết bị: ${finalErr.message}`);
+      }
+    }
 
-    // 4. Upload lên Supabase dùng ArrayBuffer
     const { data, error } = await supabase.storage
       .from('MyFirstApp') 
       .upload(filePath, decode(base64Data), { 
         contentType: `image/${fileExt === 'png' ? 'png' : 'jpeg'}`,
         upsert: true
       });
-      console.log(data);
 
-    if (error) throw error;
+    if (error) {
+      console.error("Lỗi từ phía Supabase:", error.message);
+      throw error;
+    }
 
     const { data: publicUrlData } = supabase.storage
       .from('MyFirstApp')
@@ -62,7 +82,8 @@ export const uploadImageToSupabase = async (uri: string, folder: string, userId:
     return publicUrlData.publicUrl;
 
   } catch (err: any) {
-    console.error('Upload failed:', err.message || err);
+    console.error('--- UPLOAD THẤT BẠI ---');
+    console.error('Chi tiết lỗi:', err.message || err);
     return null;
   }
 };

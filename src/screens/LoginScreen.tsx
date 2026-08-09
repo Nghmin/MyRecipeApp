@@ -43,7 +43,7 @@ const LoginScreen = ({ navigation }: any) => {
       ])
     ).start();
 
-    // Animation lắc lư cho Logo mì 🍜
+    // Animation lắc lư cho Logo
     Animated.loop(
       Animated.sequence([
         Animated.timing(logoAnim, { toValue: 1, duration: 1500, useNativeDriver: true }),

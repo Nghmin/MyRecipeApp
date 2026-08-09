@@ -47,21 +47,6 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe, initialData }: Ad
   const [instructions, setInstructions] = useState<string[]>(['']);
   const [proTips, setProTips] = useState('');
 
-  // --- FEATURE: MAGIC FILL (Xóa khi xong) ---
-  const handleMagicFill = () => {
-    const random = SAMPLE_RECIPES[Math.floor(Math.random() * SAMPLE_RECIPES.length)];
-    setName(random.name);
-    setDescription(random.description);
-    setPrepTime(random.prepTime);
-    setDifficulty(random.difficulty as any);
-    setSelectedCategories(random.categories);
-    setIngredients(random.ingredients);
-    setInstructions(random.instructions);
-    setProTips(random.proTips);
-    toastShow('success', '✨ Magic Fill', `Đã điền mẫu: ${random.name}. Nhớ thêm ảnh nhé!`);
-  };
-  // ------------------------------------------
-
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
@@ -208,12 +193,6 @@ export function AddRecipeModal({ isOpen, onClose, onAddRecipe, initialData }: Ad
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.header}>
-              {/* Nút Magic Fill - Xóa khi xong */}
-              <TouchableOpacity onPress={handleMagicFill} style={styles.magicBtn}>
-                <Zap size={18} color="#F59E0B" fill="#F59E0B" />
-                <Text style={styles.magicText}>Tự điền</Text>
-              </TouchableOpacity>
-
               <Text style={styles.headerTitle}>{initialData ? 'Sửa' : 'Thêm Món'}</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
                 <X size={20} color="#666" />
@@ -352,22 +331,6 @@ const styles = StyleSheet.create({
   modalContent: { flex: 1, backgroundColor: '#FFF', borderTopLeftRadius: 30, borderTopRightRadius: 30 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   headerTitle: { fontSize: 16, fontWeight: 'bold', color: '#111827' },
-  magicBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFBEB',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FDE68A',
-  },
-  magicText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#D97706',
-    marginLeft: 4,
-  },
   closeBtn: { padding: 8, backgroundColor: '#F3F4F6', borderRadius: 20 },
   formContainer: { padding: 20 },
   inputGroup: { marginBottom: 20 },

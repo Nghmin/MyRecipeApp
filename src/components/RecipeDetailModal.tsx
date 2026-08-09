@@ -21,7 +21,6 @@ import { CommentItem } from './CommentItem';
 
 import { auth, db } from '../config/firebaseConfig';
 import Config from "react-native-config";
-import { toastConfig } from '../config/ToastConfig';
 import Toast from 'react-native-toast-message';
 
 import { useTheme } from '../theme/ThemeContext';
@@ -44,9 +43,10 @@ interface RecipeDetailProps {
   recipe: (Recipe & { postId?: string }) | null;
   onBack: () => void;
   showSocialFeatures: boolean;
+  onDeleteRecipe?: (id: string, name: string) => void;
 }
 
-export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }: RecipeDetailProps) {
+export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures, onDeleteRecipe }: RecipeDetailProps) {
   const [userRating, setUserRating] = useState(0);
   const [commentsList, setCommentsList] = useState<any[]>([]);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
@@ -92,7 +92,7 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
     return () => unsubscribe();
   }, [recipe?.postId, updateGlobalPostRating]);
 
-  const toastShow = async (type: string, title: string, text: string) => {
+  const toastShow = (type: string, title: string, text: string) => {
     Toast.show({
       type: type,
       text1: title,
@@ -100,6 +100,7 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
       position: 'top',
       topOffset: 60,
       visibilityTime: 3000,
+      props: { primaryColor: currentTheme.primary }
     });
   }
 
@@ -261,13 +262,11 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
           </View>
 
           {/*Nội dung */}
-          <LinearGradient
-            colors={['#1e1b4b', '#4c1d95', '#1e3a8a']}
-            style={styles.contentBody}>
+          <View style={styles.contentBody}>
 
             {/* Mô tả */}
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Mô tả</Text>
+              <Text style={[styles.sectionTitle, { color: '#FFF' }]}>Mô tả</Text>
               <Text style={styles.descriptionText}>
                 {recipe.description || 'Chưa có mô tả cho món ăn này.'}
               </Text>
@@ -276,11 +275,11 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
             {/* Danh mục */}
             {(normalizeCategories(recipe.category).length > 0) && (
               <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Danh mục</Text>
+                <Text style={[styles.sectionTitle, { color: '#FFF' }]}>Danh mục</Text>
                 <View style={styles.categoriesContainer}>
                   {normalizeCategories(recipe.category).map((category: any, index: number) => (
-                    <View key={index} style={[styles.categoryItem, { backgroundColor: currentTheme.primary + '20', borderColor: currentTheme.primary, borderWidth: 1 }]}>
-                      <Text style={[styles.categoryText, { color: currentTheme.primary, fontWeight: 'bold' }]}>{category}</Text>
+                    <View key={index} style={[styles.categoryItem, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1 }]}>
+                      <Text style={[styles.categoryText, { color: '#CBD5E1', fontWeight: 'bold' }]}>{category}</Text>
                     </View>
                   ))}
                 </View>
@@ -289,7 +288,7 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
 
             {/* Nguyên liệu */}
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Nguyên liệu</Text>
+              <Text style={[styles.sectionTitle, { color: '#FFF' }]}>Nguyên liệu</Text>
               {recipe.ingredients && recipe.ingredients.length > 0 ? (
                 recipe.ingredients.map((ingredient, index) => (
                   <View key={index} style={styles.ingredientItem}>
@@ -304,7 +303,7 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
 
             {/* Cách làm */}
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Cách làm</Text>
+              <Text style={[styles.sectionTitle, { color: '#FFF' }]}>Cách làm</Text>
               {recipe.instructions && recipe.instructions.length > 0 ? (
                 recipe.instructions.map((step, index) => (
                   <View key={index} style={styles.stepRow}>
@@ -319,16 +318,26 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
               )}
             </View>
 
+            {/* Nút xóa cho món AI */}
+            {(!showSocialFeatures && recipe.idRecipe) && (
+              <TouchableOpacity
+                style={styles.deleteRecipeBtn}
+                onPress={() => onDeleteRecipe && onDeleteRecipe(recipe.idRecipe!, recipe.name)}
+              >
+                <Text style={styles.deleteRecipeText}>Xóa công thức này khỏi lịch sử</Text>
+              </TouchableOpacity>
+            )}
+
             {/* Đánh giá của người dùng */}
             {showSocialFeatures && (
               <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Đánh giá của bạn</Text>
+                <Text style={[styles.sectionTitle, { color: '#FFF' }]}>Đánh giá của bạn</Text>
                 <View style={styles.starRow}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <TouchableOpacity key={star} onPress={() => setUserRating(star)}>
                       <Star
                         size={35}
-                        color={star <= userRating ? "#FBBF24" : "#D1D5DB"}
+                        color={star <= userRating ? "#FBBF24" : "rgba(255,255,255,0.2)"}
                         fill={star <= userRating ? "#FBBF24" : "transparent"}
                       />
                     </TouchableOpacity>
@@ -350,14 +359,14 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
                     </>)}
                     <TextInput
                       placeholder="Chia sẻ cảm nghĩ của bạn..."
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor="#94A3B8"
                       multiline
                       style={styles.input}
                       value={inputComment}
                       onChangeText={setInputComment}
                     />
                     <TouchableOpacity
-                      style={[styles.submitButton, editingCommentId && { backgroundColor: '#10B981' }]}
+                      style={[styles.submitButton, {backgroundColor: currentTheme.primary}, editingCommentId && { backgroundColor: '#10B981' }]}
                       onPress={handleActionComment}
                     >
                       <Text style={styles.submitButtonText}>
@@ -366,8 +375,8 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
                     </TouchableOpacity>
                   </View>
                 </>)}
-                <View style={[styles.card, { marginBottom: 50 }]}>
-                  <Text style={styles.sectionTitle}>Bình luận ({commentsList.length})</Text>
+                <View style={[styles.commentSection, { marginTop: 20 }]}>
+                  <Text style={[styles.sectionTitle, { color: '#FFF' }]}>Bình luận ({commentsList.length})</Text>
                   {commentsList.map((item) => (
                     <CommentItem
                       key={item.id}
@@ -376,16 +385,16 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
                       isPostOwner={recipe?.idUser === auth.currentUser?.uid}
                       onDelete={handleDeleteComment}
                       onEdit={handlePrepareEdit}
+                      isDark={true}
                     />
                   ))}
                 </View>
               </View>
             )}
 
-          </LinearGradient>
+          </View>
         </ScrollView>
       </View>
-      <Toast config={toastConfig} />
     </Modal>
   );
 }
@@ -393,13 +402,13 @@ export function RecipeDetailModal({ isOpen, recipe, onBack, showSocialFeatures }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FEF3C7'
+    backgroundColor: '#E2E8F0'
   },
   scrollContent: {
     flexGrow: 1
   },
   imageContainer: {
-    height: 380,
+    height: 420,
     width: '100%',
     position: 'relative'
   },
@@ -414,9 +423,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50,
     left: 20,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(255,255,255,0.95)',
     padding: 10,
-    borderRadius: 25,
+    borderRadius: 16,
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -425,187 +434,181 @@ const styles = StyleSheet.create({
   },
   titleOverlay: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 50,
     left: 20,
     right: 20,
   },
   recipeName: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 32,
+    fontWeight: '900',
     color: '#FFF',
-    marginBottom: 10,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 5
+    marginBottom: 12,
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 6
   },
   infoRow: {
     flexDirection: 'row',
-    gap: 15
+    gap: 12
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   infoText: {
     color: '#FFF',
     fontSize: 13,
-    fontWeight: '600'
+    fontWeight: '700'
   },
   contentBody: {
     padding: 20,
-    marginTop: -30,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    backgroundColor: '#FEF3C7'
+    marginTop: -40,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    backgroundColor: '#E2E8F0',
+    paddingBottom: 100,
   },
   card: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 16,
-    elevation: 3,
+    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+    borderRadius: 28,
+    padding: 24,
+    marginBottom: 20,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 12
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 16,
+    letterSpacing: 0.5,
   },
   descriptionText: {
     fontSize: 15,
-    color: '#4B5563',
-    lineHeight: 22
+    color: '#CBD5E1',
+    lineHeight: 24,
+    fontWeight: '400',
   },
-
   categoriesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 16
+    gap: 10,
   },
   categoryItem: {
-    backgroundColor: '#E5E7EB',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginBottom: 12
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
   },
   categoryText: {
     fontSize: 13,
-    color: '#374151'
   },
-
   ingredientItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-    gap: 12
+    marginBottom: 12,
+    gap: 12,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    padding: 12,
+    borderRadius: 16,
   },
   bulletPoint: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    //backgroundColor: '#F97316'
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   ingredientText: {
     fontSize: 15,
-    color: '#374151'
+    color: '#E2E8F0',
+    fontWeight: '500',
   },
   stepRow: {
     flexDirection: 'row',
-    marginBottom: 18,
-    gap: 14
+    marginBottom: 20,
+    gap: 16,
   },
   stepNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    //backgroundColor: '#F97316',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepNumberText: {
     color: '#FFF',
-    fontWeight: 'bold',
+    fontWeight: '900',
     fontSize: 14
   },
   stepText: {
     flex: 1,
     fontSize: 15,
-    color: '#374151',
-    lineHeight: 22
+    color: '#E2E8F0',
+    lineHeight: 24,
   },
   starRow: {
     flexDirection: 'row',
     gap: 12,
     justifyContent: 'center',
-    marginVertical: 10
+    marginVertical: 15
   },
   reviewInputContainer: {
-    marginTop: 15
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    padding: 16,
+    height: 100,
     textAlignVertical: 'top',
-    marginBottom: 12,
-    color: '#1F2937'
+    marginBottom: 16,
+    color: '#FFF',
+    fontSize: 15,
   },
   submitButton: {
-    //backgroundColor: '#F97316',
-    padding: 14,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 16,
     alignItems: 'center',
   },
   submitButtonText: {
     color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 16
+    fontWeight: '800',
+    fontSize: 16,
+    letterSpacing: 0.5,
   },
-  reviewItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-    paddingVertical: 12
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4
-  },
-  userName: {
-    fontWeight: '700',
-    color: '#1F2937',
-    fontSize: 14
-  },
-  reviewDate: {
-    fontSize: 11,
-    color: '#9CA3AF'
-  },
-  reviewStars: {
-    flexDirection: 'row',
-    marginBottom: 6,
-    gap: 2
-  },
-  reviewComment: {
-    fontSize: 13,
-    color: '#4B5563',
-    lineHeight: 18
+  commentSection: {
+    width: '100%',
   },
   emptyText: {
     fontSize: 14,
-    color: '#9CA3AF',
-    fontStyle: 'italic'
+    color: '#94A3B8',
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
-
+  deleteRecipeBtn: {
+    padding: 15,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  deleteRecipeText: {
+    color: '#EF4444',
+    fontWeight: '700',
+    fontSize: 14,
+  },
 });

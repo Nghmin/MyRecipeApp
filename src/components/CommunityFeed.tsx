@@ -39,12 +39,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
-    backgroundColor: 'rgba(45, 48, 49, 0.88)',
-    borderRadius: 15,
+    padding: 16,
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+    borderRadius: 20,
     borderWidth: 1,
   },
-  headerMain: { marginTop: 10, marginHorizontal: 0, borderWidth: 2 },
+  headerMain: { marginTop: 10, marginHorizontal: 0, borderWidth: 1.5 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   title: { color: 'white', fontSize: 18, fontWeight: 'bold' },
@@ -124,28 +124,102 @@ const styles = StyleSheet.create({
 
 const cardStyles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(39, 76, 87, 0.88)',
-    borderRadius: 20,
-    marginBottom: 20,
+    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+    borderRadius: 28,
+    marginBottom: 24,
     overflow: 'hidden',
-    borderWidth: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
   },
-  userInfo: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 10 },
-  deleteBtn: { position: 'absolute', right: 15 },
-  avatar: { width: 35, height: 35, borderRadius: 17.5 },
-  userName: { color: 'white', fontWeight: '600' },
-  ratingContainer: { flexDirection: 'row', alignItems: 'center' },
-  starIcon: { marginLeft: 0, gap: 2 },
-  userRating: { color: 'white', fontSize: 12, fontWeight: '400', paddingRight: 2 },
-  sharedAt: { color: '#ebeff5ff', fontSize: 11 },
-  postImage: { width: '100%', height: 250 },
-  footer: { flexDirection: 'row', justifyContent: 'space-between', padding: 12, alignItems: 'center' },
-  actions: { flexDirection: 'row', gap: 15 },
-  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  actionText: { color: 'white', fontSize: 14 },
-  content: { paddingHorizontal: 12, paddingBottom: 15 },
-  recipeName: { color: 'white', fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
-  description: { color: '#f3f4f5ff', fontSize: 13 },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  userInfoLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)' },
+  userName: { color: 'white', fontWeight: '700', fontSize: 15 },
+  sharedAt: { color: '#94A3B8', fontSize: 12, marginTop: 2 },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 280,
+  },
+  postImage: { width: '100%', height: '100%', borderRadius: 0 },
+  likeCircle: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+  },
+  deleteBtnTop: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(239, 68, 68, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: { padding: 16 },
+  contentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  recipeName: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+  ratingContainer: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  userRating: { color: '#FBBF24', fontSize: 12, fontWeight: 'bold' },
+  description: { color: '#CBD5E1', fontSize: 13, lineHeight: 18, marginBottom: 12 },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    paddingTop: 12,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statText: { color: '#94A3B8', fontSize: 12, fontWeight: '600' },
 });
 
 interface CommunityFeedProps {
@@ -165,7 +239,7 @@ export function CommunityFeed({
 }: CommunityFeedProps) {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [newPostsBuffer, setNewPostsBuffer] = useState<CommunityPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [displayLimit, setDisplayLimit] = useState(10);
@@ -180,52 +254,74 @@ export function CommunityFeed({
 
   const { currentTheme } = useTheme();
   const { userProfile } = useUser();
-  const currentUser = auth.currentUser;
+  const currentUserId = userProfile?.uid;
 
   useEffect(() => {
     const fetchFavs = async () => {
-      const favs = await FavoriteService.getFavorites();
-      setFavoriteIds(favs.map((f: any) => f.postId));
+      if (!currentUserId) return;
+      try {
+        const favs = await FavoriteService.getFavorites();
+        setFavoriteIds(favs.map((f: any) => f.postId));
+      } catch (e) {
+        console.log("Error fetching favorites:", e);
+      }
     };
     fetchFavs();
-  }, []);
+  }, [currentUserId]);
 
   useEffect(() => {
     let unsubscribe: () => void;
-    if (!currentUser) return;
 
+    const forceStopLoading = setTimeout(() => {
+      setLoading(false);
+    }, 4000);
+
+    if (!currentUserId) {
+      setLoading(false);
+      return () => clearTimeout(forceStopLoading);
+    }
+
+    setLoading(true);
     if (mode === 'favorites') {
-      const favRef = collection(db, "Users", currentUser.uid, "Favorites");
+      const favRef = collection(db, "Users", currentUserId, "Favorites");
       unsubscribe = onSnapshot(favRef, async (snapshot) => {
-        const favIds = snapshot.docs.map(d => d.id);
-        if (favIds.length > 0) {
-          const chunks = [];
-          for (let i = 0; i < favIds.length; i += 30) {
-            chunks.push(favIds.slice(i, i + 30));
-          }
+        try {
+            const favIds = snapshot.docs.map(d => d.id);
+            if (favIds.length > 0) {
+              const chunks = [];
+              for (let i = 0; i < favIds.length; i += 30) {
+                chunks.push(favIds.slice(i, i + 30));
+              }
 
-          const allPosts: CommunityPost[] = [];
-          for (const chunk of chunks) {
-            const qPosts = query(
-              collection(db, "CommunityPosts"),
-              where(documentId(), "in", chunk)
-            );
-            const postSnap = await getDocs(qPosts);
-            const chunkData = postSnap.docs.map(d => ({
-              postId: d.id,
-              ...d.data()
-            })) as CommunityPost[];
-            allPosts.push(...chunkData);
-          }
-          setPosts(allPosts);
-        } else {
-          setPosts([]);
+              const allPosts: CommunityPost[] = [];
+              for (const chunk of chunks) {
+                const qPosts = query(
+                  collection(db, "CommunityPosts"),
+                  where(documentId(), "in", chunk)
+                );
+                const postSnap = await getDocs(qPosts);
+                const chunkData = postSnap.docs.map(d => ({
+                  postId: d.id,
+                  ...d.data()
+                })) as CommunityPost[];
+                allPosts.push(...chunkData);
+              }
+              setPosts(allPosts);
+            } else {
+              setPosts([]);
+            }
+        } catch (err) {
+            console.log("Error loading favorites feed:", err);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
+      }, (error) => {
+          console.log("Favorite snapshot error:", error);
+          setLoading(false);
       });
     } else {
       let q = mode === 'mine'
-        ? query(collection(db, "CommunityPosts"), where("idUser", "==", currentUser.uid), orderBy("sharedAt", "desc"))
+        ? query(collection(db, "CommunityPosts"), where("idUser", "==", currentUserId), orderBy("sharedAt", "desc"))
         : query(collection(db, "CommunityPosts"), orderBy("sharedAt", "desc"), limit(displayLimit));
 
       unsubscribe = onSnapshot(q, (snapshot) => {
@@ -246,8 +342,7 @@ export function CommunityFeed({
               if (!existingIds.has(item.postId)) {
                 const itemTime = item.sharedAt?.seconds;
 
-                // CHỈ cho hiện ngay nếu là bài của mình
-                if (item.idUser === currentUser?.uid) {
+                if (item.idUser === currentUserId) {
                   toShowImmediately.push(item);
                 }
                 else if (itemTime === undefined || itemTime >= topTimestamp) {
@@ -259,7 +354,6 @@ export function CommunityFeed({
               }
             });
 
-            // Nếu có bài mới (không phải của mình), cập nhật buffer
             if (toBuffer.length > 0) {
               setNewPostsBuffer(prev => {
                 const combined = [...toBuffer, ...prev];
@@ -267,13 +361,11 @@ export function CommunityFeed({
               });
             }
 
-            // Đồng bộ dữ liệu Like/Comment cho các bài cũ
             const updatedExisting = currentPosts.map(p => {
               const match = incomingData.find(i => i.postId === p.postId);
               return match ? { ...p, ...match } : p;
             });
 
-            // Chỉ đẩy bài của mình vào nếu có
             let nextPosts = [...updatedExisting];
             if (toShowImmediately.length > 0) {
               nextPosts = [...toShowImmediately, ...nextPosts];
@@ -290,11 +382,18 @@ export function CommunityFeed({
         }
         setLoading(false);
         setLoadingMore(false);
+      }, (error) => {
+          console.log("Feed snapshot error:", error);
+          setLoading(false);
+          setLoadingMore(false);
       });
     }
 
-    return () => unsubscribe?.();
-  }, [mode, displayLimit, currentUser]);
+    return () => {
+      unsubscribe?.();
+      clearTimeout(forceStopLoading);
+    };
+  }, [mode, displayLimit, currentUserId]);
 
   const handleApplyNewPosts = useCallback(() => {
     if (newPostsBuffer.length > 0) {
@@ -311,26 +410,6 @@ export function CommunityFeed({
       setDisplayLimit(prev => prev + 10);
     }
   }, [loading, loadingMore, hasMore, mode]);
-
-  // HÀM TEST GIẢ LẬP BÀI ĐĂNG MỚI (Nhấn giữ nút Đăng bài để kích hoạt)
-  const handleTestNewPost = () => {
-    const fakePost: CommunityPost = {
-      postId: 'test-' + Date.now(),
-      idUser: 'fake-user',
-      userName: 'Người dùng Thử nghiệm',
-      userAvatar: AVT_DEFAULT,
-      name: 'Món ăn mới giả lập ' + (newPostsBuffer.length + 1),
-      image: 'https://picsum.photos/400/250',
-      description: 'Đây là bài viết giả lập để kiểm tra tính năng thông báo bài mới.',
-      sharedAt: { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 } as any,
-      likesCount: 99,
-      commentsCount: 5,
-      likedBy: [],
-      rating: 5,
-    };
-    setNewPostsBuffer(prev => [fakePost, ...prev]);
-    toastShow('info', 'Test Mode', 'Đã giả lập bài đăng mới! Hãy thử cuộn xuống để xem Badge ở nút BackToTop.');
-  };
 
   const toastShow = useCallback((type: string, title: string, text: string) => {
     Toast.show({
@@ -359,14 +438,9 @@ export function CommunityFeed({
   });
 
   const animatedNewPostsStyle = useAnimatedStyle(() => {
-    // Vị trí dính lại ở trên cùng khi cuộn
     const stickyTop = 10;
-
-    // Vị trí bắt đầu: ngay sát trên thẻ bài viết đầu tiên (sau Header và Filter)
     const startTop = headerHeight.value > 0 ? headerHeight.value - 45 : 350;
     const currentTop = startTop - scrollY.value;
-
-    // TỐI ƯU UX: Ẩn nút lơ lửng ở trên khi đã cuộn xuống quá sâu (> 800)
     const isDeepDown = scrollY.value > 800;
 
     return {
@@ -394,14 +468,14 @@ export function CommunityFeed({
     try {
       await InteractionService.handleLikeLogic(
         post,
-        currentUser,
+        auth.currentUser,
         userProfile?.name,
         userProfile?.avatar
       );
     } catch (error) {
       console.log("Lỗi khi tương tác:", error);
     }
-  }, [currentUser, userProfile?.name, userProfile?.avatar]);
+  }, [userProfile]);
 
   const handleToggleSave = useCallback(async (post: CommunityPost) => {
     const isSaved = favoriteIds.includes(post.postId);
@@ -446,7 +520,6 @@ export function CommunityFeed({
     });
 
     if (activeFilter === 'newest') {
-      // Sắp xếp theo thời gian, bài mới chưa có timestamp (đang sync) luôn ở trên cùng
       return [...filtered].sort((a, b) => {
         const timeA = a.sharedAt?.seconds ?? Number.MAX_SAFE_INTEGER;
         const timeB = b.sharedAt?.seconds ?? Number.MAX_SAFE_INTEGER;
@@ -465,8 +538,8 @@ export function CommunityFeed({
   }, [posts, searchQuery, activeFilter]);
 
   const renderItem = useCallback(({ item, index }: { item: CommunityPost, index: number }) => {
-    const isMine = item.idUser === currentUser?.uid;
-    const isLiked = item.likedBy?.includes(currentUser?.uid || '');
+    const isMine = item.idUser === currentUserId;
+    const isLiked = item.likedBy?.includes(currentUserId || '');
     return (
       <Animated.View entering={FadeInUp.delay(index * 100)}>
         <PostCard
@@ -485,7 +558,7 @@ export function CommunityFeed({
         />
       </Animated.View>
     );
-  }, [currentUser?.uid, favoriteIds, currentTheme, onPressDetailPost, handleLike, handleToggleSave, onFavoriteChange, handleDeletePost]);
+  }, [currentUserId, favoriteIds, currentTheme, onPressDetailPost, handleLike, handleToggleSave, onFavoriteChange, handleDeletePost]);
 
   const renderFooter = useCallback(() => {
     if (!loadingMore) return null;
@@ -498,22 +571,20 @@ export function CommunityFeed({
 
   const renderEmpty = useCallback(() => (
     <View style={styles.emptyContainer}>
-      <SearchX size={50} color={currentTheme.primary} />
-      <Text style={styles.emptyText}>
-        {searchQuery
-          ? `Không tìm thấy kết quả cho "${searchQuery}"`
-          : "Chưa có bài đăng nào trong mục này."}
-      </Text>
+      {loading ? (
+        <ActivityIndicator size="large" color={currentTheme.primary} style={{ marginTop: 20 }} />
+      ) : (
+        <>
+          <SearchX size={50} color={currentTheme.primary} />
+          <Text style={styles.emptyText}>
+            {searchQuery
+              ? `Không tìm thấy kết quả cho "${searchQuery}"`
+              : "Chưa có bài đăng nào trong mục này."}
+          </Text>
+        </>
+      )}
     </View>
-  ), [searchQuery, currentTheme.primary]);
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={currentTheme.primary} />
-      </View>
-    );
-  }
+  ), [searchQuery, currentTheme.primary, loading]);
 
   return (
     <View style={styles.container}>
@@ -547,7 +618,6 @@ export function CommunityFeed({
                   </View>
                 </View>
                 <TouchableOpacity
-                  onLongPress={handleTestNewPost} // NHẤN GIỮ ĐỂ TEST
                   onPress={onOpenShareModal}
                   style={[styles.shareButton, { backgroundColor: currentTheme.primary }]}
                   activeOpacity={0.8}
@@ -594,7 +664,6 @@ export function CommunityFeed({
           style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
         >
           <ChevronUp color="white" size={28} />
-          {/* Chấm đỏ thông báo có bài mới tích hợp vào nút BackToTop */}
           {newPostsBuffer.length > 0 && (
             <View style={styles.notificationBadge} />
           )}
@@ -605,46 +674,60 @@ export function CommunityFeed({
 }
 
 const PostCard = memo(({ post, onLike, isLiked, onSave, isSaved, onPress, isMine, onDelete, currentTheme }: any) => (
-  <View style={[cardStyles.card, { borderColor: currentTheme.primary }]}>
-    <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
-      <View style={cardStyles.userInfo}>
+  <View style={[cardStyles.card, { borderColor: 'rgba(255,255,255,0.05)' }]}>
+    <View style={cardStyles.userInfo}>
+      <View style={cardStyles.userInfoLeft}>
         <Image source={{ uri: post.userAvatar || AVT_DEFAULT }} style={cardStyles.avatar} />
-        <Text style={cardStyles.userName}>{post.userName}</Text>
-        <View style={cardStyles.ratingContainer}>
-          <Text style={cardStyles.userRating}>{post.rating}</Text>
-          <Star style={cardStyles.starIcon} size={10} color='#FBBF24' fill='#FBBF24' />
+        <View>
+          <Text style={cardStyles.userName}>{post.userName}</Text>
+          <Text style={cardStyles.sharedAt}>{formatRelativeTime(post.sharedAt)}</Text>
         </View>
-        <Text style={cardStyles.sharedAt}>
-          {formatRelativeTime(post.sharedAt)}
-        </Text>
-        {isMine && (
-          <TouchableOpacity style={cardStyles.deleteBtn} onPress={onDelete}>
-            <Trash2 size={22} color='red' />
-          </TouchableOpacity>
-        )}
       </View>
-      <Image source={{ uri: post.image }} style={cardStyles.postImage} />
-    </TouchableOpacity>
 
-    <View style={cardStyles.footer}>
-      <View style={cardStyles.actions}>
-        <TouchableOpacity style={cardStyles.actionBtn} onPress={onLike}>
-          <Heart size={22} color={isLiked ? "#EF4444" : "#E5E7EB"} fill={isLiked ? "#EF4444" : "none"} />
-          <Text style={cardStyles.actionText}>{post.likesCount || 0}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={cardStyles.actionBtn} onPress={onPress}>
-          <MessageCircle size={22} color="#E5E7EB" />
-          <Text style={cardStyles.actionText}>{post.commentsCount || 0}</Text>
+      <View style={cardStyles.headerActions}>
+        <TouchableOpacity style={cardStyles.actionCircle} onPress={onSave}>
+          <Bookmark size={18} color={isSaved ? "#FBBF24" : "#FFF"} fill={isSaved ? "#FBBF24" : "none"} />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={onSave}>
-        <Bookmark size={22} color={isSaved ? "#FBBF24" : "#E5E7EB"} fill={isSaved ? "#FBBF24" : "none"} />
-      </TouchableOpacity>
     </View>
 
+    <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={cardStyles.imageContainer}>
+      <Image source={{ uri: post.image }} style={cardStyles.postImage} resizeMode="cover" />
+
+      <TouchableOpacity style={cardStyles.likeCircle} onPress={onLike}>
+        <Heart size={26} color={isLiked ? "#EF4444" : "#FFF"} fill={isLiked ? "#EF4444" : "none"} />
+      </TouchableOpacity>
+
+      {isMine && (
+        <TouchableOpacity style={cardStyles.deleteBtnTop} onPress={onDelete}>
+          <Trash2 size={16} color='white' />
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
+
     <View style={cardStyles.content}>
-      <Text style={cardStyles.recipeName}>{post.name}</Text>
-      <Text style={cardStyles.description} numberOfLines={2}>{post.description}</Text>
+      <View style={cardStyles.contentHeader}>
+        <Text style={cardStyles.recipeName}>{post.name}</Text>
+        <View style={cardStyles.ratingContainer}>
+          <Star size={14} color='#FBBF24' fill='#FBBF24' />
+          <Text style={cardStyles.userRating}>{post.rating || '5.0'}</Text>
+        </View>
+      </View>
+
+      <Text style={cardStyles.description} numberOfLines={2}>
+        {post.description || 'Không có mô tả cho món ăn này.'}
+      </Text>
+
+      <View style={cardStyles.statsRow}>
+        <View style={cardStyles.statItem}>
+          <MessageCircle size={16} color="#94A3B8" />
+          <Text style={cardStyles.statText}>{post.commentsCount || 0}</Text>
+        </View>
+        <View style={cardStyles.statItem}>
+          <Heart size={16} color="#94A3B8" />
+          <Text style={cardStyles.statText}>{post.likesCount || 0}</Text>
+        </View>
+      </View>
     </View>
   </View>
 ));

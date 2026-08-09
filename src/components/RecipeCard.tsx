@@ -91,7 +91,7 @@ export const RecipeCard = React.memo(({
 
         {/* Badge AI */}
         {isAIGenerated && (
-          <View style={[styles.aiBadge, { backgroundColor: currentTheme.primary }]}>         
+          <View style={[styles.aiBadge, { backgroundColor: currentTheme.primary }]}>
             <Sparkles size={10} color="#FFF" />
             <Text style={styles.aiBadgeText}>AI CHEF</Text>
           </View>
@@ -99,7 +99,7 @@ export const RecipeCard = React.memo(({
 
         {/* Nút chỉnh sửa */}
         {isMine && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.editBtn , { backgroundColor: currentTheme.primary, borderColor: currentTheme.primary } ]}
             onPress={onEdit}
           >
@@ -128,23 +128,22 @@ export const RecipeCard = React.memo(({
 const styles = StyleSheet.create({
   container: {
     width: '48%',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   card: {
     borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor:  'rgba(255, 140, 0, 0.4)',
+    borderWidth: 1,
     overflow: 'hidden',
-    backgroundColor:'rgba(15, 23, 42, 0.85)',
-    elevation: 10,
+    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   imageContainer: {
     width: '100%',
-    height: 130,
+    height: 140,
     position: 'relative',
   },
   cardImage: {
@@ -156,32 +155,31 @@ const styles = StyleSheet.create({
   },
   timingBadge: {
     position: 'absolute',
-    top: 8,
+    bottom: 8,
     left: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingHorizontal: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
   },
   timingText: {
-    color: '#CBD5E1',
-    fontSize: 9,
+    color: '#FFF',
+    fontSize: 10,
     fontWeight: '600',
   },
   cardInfo: {
-    padding: 8,
+    padding: 12,
   },
   recipeName: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 5,
+    marginBottom: 8,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
   metaItem: {
     flexDirection: 'row',
@@ -189,18 +187,19 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metaText: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#94A3B8',
+    fontWeight: '500',
   },
   aiBadge: {
     position: 'absolute',
     top: 8,
-    right: 8,
+    left: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
     gap: 4,
     elevation: 4,
   },
@@ -208,25 +207,25 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 9,
     fontWeight: '900',
+    letterSpacing: 0.5,
   },
   editBtn: {
     position: 'absolute',
-    //bottom: 55,
+    top: 8,
     right: 8,
-    backgroundColor:'#F97316',
     width: 32,
     height: 32,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   favBtn: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     width: 32,
     height: 32,
     borderRadius: 16,

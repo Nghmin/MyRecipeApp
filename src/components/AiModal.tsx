@@ -7,8 +7,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import IconMaterial from 'react-native-vector-icons/MaterialCommunityIcons';
 import { aiService } from '../services/aiService';
 
-//const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
 interface Message {
   id: string;
   text: string;

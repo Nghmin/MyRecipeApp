@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
-  StyleSheet, ImageBackground, Text, View, TouchableOpacity, ActivityIndicator, Alert, FlatList, TextInput, StatusBar
+  StyleSheet, ImageBackground, Text, View, TouchableOpacity, ActivityIndicator, FlatList, TextInput, StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { ChefHat, Plus } from 'lucide-react-native';
 import IconMaterial from 'react-native-vector-icons/MaterialCommunityIcons';
+import Toast from 'react-native-toast-message';
+import { toastConfig } from '../config/ToastConfig';
 //
 import { collection, query, where, onSnapshot, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { db, auth } from '../config/firebaseConfig';
@@ -97,31 +99,37 @@ export default function RecipeOfMySelfScreen() {
 
   const handleDeleteRecipe = (idRecipe: string, recipeName: string, imageUrl: string) => {
     const user = auth.currentUser;
-    Alert.alert(
-      "Xác nhận xóa",
-      `Bạn có chắc chắn muốn xóa món "${recipeName}" không?`,
-      [
-        { text: "Hủy", style: "cancel" },
-        {
-          text: "Xóa",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              if (imageUrl && imageUrl.includes('supabase.co')) {
-                await deleteImageFromSupabase(imageUrl);
-              }
-              await deleteDoc(doc(db, "Recipes", idRecipe));
-              if (user) {
-                await deleteDoc(doc(db, "Users", user.uid, "Favorites", idRecipe));
-              }
-            } catch (error) {
-              console.error("Lỗi khi xóa món:", error);
-              Alert.alert("Lỗi", "Không thể xóa món ăn lúc này.");
+    Toast.show({
+      type: 'confirm',
+      text1: 'Xác nhận xóa',
+      text2: `Bạn có chắc chắn muốn xóa món "${recipeName}" không?`,
+      props: {
+        primaryColor: currentTheme.primary,
+        onConfirm: async () => {
+          try {
+            if (imageUrl && imageUrl.includes('supabase.co')) {
+              await deleteImageFromSupabase(imageUrl);
             }
+            await deleteDoc(doc(db, "Recipes", idRecipe));
+            if (user) {
+              await deleteDoc(doc(db, "Users", user.uid, "Favorites", idRecipe));
+            }
+            Toast.show({
+              type: 'success',
+              text1: 'Thành công',
+              text2: 'Đã xóa món ăn khỏi bộ sưu tập của bạn.'
+            });
+          } catch (error) {
+            console.error("Lỗi khi xóa món:", error);
+            Toast.show({
+              type: 'error',
+              text1: 'Lỗi',
+              text2: 'Không thể xóa món ăn lúc này.'
+            });
           }
         }
-      ]
-    );
+      }
+    });
   };
 
 
@@ -289,6 +297,7 @@ export default function RecipeOfMySelfScreen() {
             }}
             showSocialFeatures={false}
           />
+          <Toast config={toastConfig} />
         </SafeAreaView>
       </ImageBackground>
     </View>

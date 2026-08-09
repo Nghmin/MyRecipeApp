@@ -19,35 +19,41 @@ export const toastConfig = {
     </View>
   ),
 
-  confirm: ({ text1, text2, props }: any) => (
-    <View style={styles.confirmBox}>
-      <View style={styles.confirmIconCircle}>
-        <Icon name="chat-question" size={32} color="#F97316" />
-      </View>
-      
-      <Text style={styles.confirmTitle}>{text1}</Text>
-      <Text style={styles.confirmMessage}>{text2}</Text>
-      
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity 
-          style={styles.btnCancel} 
-          onPress={() => Toast.hide()}
-        >
-          <Text style={styles.textCancel}>Đóng</Text>
-        </TouchableOpacity>
+  confirm: ({ text1, text2, props }: any) => {
+    const primaryColor = props?.primaryColor || '#F97316';
+    return (
+      <View style={styles.confirmBox}>
+        <View style={[styles.confirmIconCircle, { backgroundColor: `${primaryColor}1A` }]}>
+          <Icon name="chat-question" size={32} color={primaryColor} />
+        </View>
 
-        <TouchableOpacity 
-          style={styles.btnConfirm} 
-          onPress={() => {
-            if (props.onConfirm) props.onConfirm();
-            Toast.hide();
-          }}
-        >
-          <Text style={styles.textConfirm}>Xác nhận</Text>
-        </TouchableOpacity>
+        <Text style={styles.confirmTitle}>{text1}</Text>
+        <Text style={styles.confirmMessage}>{text2}</Text>
+
+        <View style={styles.buttonGroup}>
+          <TouchableOpacity
+            style={styles.btnCancel}
+            onPress={() => Toast.hide()}
+          >
+            <Text style={styles.textCancel}>Đóng</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.btnConfirm, { backgroundColor: primaryColor, shadowColor: primaryColor }]}
+            onPress={() => {
+              Toast.hide();
+              // Đợi một chút để Toast cũ đóng hẳn rồi mới thực thi hành động
+              setTimeout(() => {
+                if (props.onConfirm) props.onConfirm();
+              }, 100);
+            }}
+          >
+            <Text style={styles.textConfirm}>Xác nhận</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  ),
+    );
+  },
 
 
   optionMenu: ({ text1, text2, props }: any) => (
@@ -126,7 +132,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(249, 115, 22, 0.1)', 
+    backgroundColor: 'rgba(249, 115, 22, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -149,7 +155,7 @@ const styles = StyleSheet.create({
 
   // Style confirm 
   confirmBox: {
-    width: '80%', 
+    width: '80%',
     backgroundColor: '#f4e8e8f6',
     borderRadius: 24,
     padding: 10,
@@ -211,7 +217,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   textCancel: { 
-    color: '#8E8E93', 
+    color: '#8E8E93',
     fontWeight: '600',
     fontSize: 15 
   },

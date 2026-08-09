@@ -91,16 +91,22 @@ export const aiService = {
 
       return {
         ...data,
+        idRecipe: `ai_${Date.now()}`,
+        idUser: "AI_CHEF",
         image: imageUrl,
         isAI: true
       };
     } catch (error) {
       console.error("Lỗi lấy chi tiết công thức:", error);
       return {
+          idRecipe: `ai_err_${Date.now()}`,
+          idUser: "AI_CHEF",
           name: dishName,
           description: "Món ăn ngon gợi ý bởi AI",
           ingredients: ["Vui lòng thử lại"],
           instructions: ["AI đang bận, hãy chọn lại món này"],
+          cookTime: "---",
+          difficulty: "---",
           isAI: true,
           image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
       };
